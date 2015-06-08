@@ -1,0 +1,182 @@
+.form-control-plist {
+  display: block;
+  width: 60%;
+  height: 34px;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+       -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+          transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+.form-control-plist:focus {
+  border-color: #66afe9;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+}
+.form-control-plist::-moz-placeholder {
+  color: #777;
+  opacity: 1;
+}
+.form-control-plist:-ms-input-placeholder {
+  color: #777;
+}
+.form-control-plist::-webkit-input-placeholder {
+  color: #777;
+}
+.form-control-plist[disabled],
+.form-control-plist[readonly],
+fieldset[disabled] .form-control-plist {
+  cursor: not-allowed;
+  background-color: #eee;
+  opacity: 1;
+}
+textarea.form-control-plist {
+  height: auto;
+}
+
+/* table style */
+.ae-list thead td {
+	font-weight: bold;
+	font-size: 14px!important;
+}
+
+.ae-list tbody > tr > td {
+	vertical-align: middle;
+	font-size: 1.2em!important;
+}
+.ae-list tbody > tr > td.top {
+	vertical-align: top;	
+	font-size: 1.2em!important;
+}
+.ae-list a.asc:after {
+	content: " \f107";
+	font-family: FontAwesome;
+	font-size: 14px;
+}
+.ae-list a.desc:after {
+	content: " \f106";
+	font-family: FontAwesome;
+	font-size: 14px;
+}
+
+.ae-list tbody > tr > td. {
+	background-color: #fffff;
+}
+
+.ae-table-striped > tbody > tr:nth-child(odd) > td,
+.ae-table-striped > tbody > tr:nth-child(odd) > th {
+  background-color: #f9f9f9;
+}
+
+.ae-table-hover > tbody > tr:hover > td,
+.ae-table-hover > tbody > tr:hover > th {
+  background-color: #d9edf7;
+}
+
+.ae-list > tbody > tr > td.dangertd {
+	background-color: #C90A0A;
+}
+.ae-list > tbody > tr.dangertr td:not(:first-child) {
+	background-color: #F6F4E2;
+}
+.ae-table-hover > tbody > tr.dangertr:hover > td:not(:first-child),
+.ae-table-hover > tbody > tr:hover > .dangertr {
+  background-color: #f2dede;
+}
+
+/* Mod Manager */
+#error-log {
+	width: 99%;
+	height: 300px;
+	padding: 5px;
+	border: 1px solid #CCCCCC;
+	background: #fff;
+	overflow: scroll;
+	margin-bottom: 10px;
+}
+#vqcache {
+	min-width: 250px;
+	margin-bottom: 10px;
+}
+a.about {
+	text-decoration: none;
+}
+a.about:hover {
+	text-decoration: underline;
+}
+.vqnws {
+	white-space: nowrap;
+}
+a.action-link:hover {
+	text-decoration: none;
+}
+.vqdescription {
+	font-size: 0.9em;
+	margin: 3px 0px;
+}
+.vqhelp {
+	color: #666;
+	font-size: 11px;
+	font-weight: normal;
+	font-family: Verdana, Geneva, sans-serif;
+	display: block;
+}
+.error-install {
+	font-family: "Courrier New", "Lucida Console", monospace;
+	font-weight: bold;
+}
+li.highlight-error > a {
+	color: #ff0000!important;
+}
+.font-small {
+	color: #666;
+	font-size: 11px;
+	font-weight: normal;
+	font-family: Verdana, Geneva, sans-serif;
+}
+
+/* misc */
+#overlay {
+	opacity : 0.2;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: #999999;
+	width: 100%;
+	z-index': 50000;
+}	
+.saving-spinner {
+	opacity : 1;
+	position: fixed;
+	width: 184px;
+	height: 184px;
+	margin-top:10%;
+	margin-left:-92px;
+	left: 50%;
+	background-color: #999999;
+	width: 100%;
+	z-index': 50001;
+}
+
+.ptop15 {
+	padding-top:15px;
+}
+
+.abtm{
+	position:absolute;
+	bottom:0;
+	right:0;
+}
+
+.clickable {
+    cursor: pointer;
+}

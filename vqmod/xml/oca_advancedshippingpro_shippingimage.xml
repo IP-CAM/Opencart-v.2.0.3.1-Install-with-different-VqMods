@@ -1,0 +1,28 @@
+<modification>
+    <id>Shipping Image And Instruction Enabler</id>
+    <version>1.0.1</version>
+    <vqmver>2.5.0</vqmver>
+	
+	<file name="catalog/view/theme/*/template/checkout/shipping_method.tpl">		
+		<!--OpenCart v2.x--> 
+		<operation error="skip">
+			<search position="before"><![CDATA[<?php echo $quote['title']; ?> - <?php echo $quote['text']; ?></label>]]></search>
+            <add><![CDATA[<?php if (isset($quote['image']) && $quote['image']) { ?><img src="<?php echo $quote['image']; ?>" alt="<?php echo $quote['title']; ?>" title="<?php echo $quote['title']; ?>" class="img-thumbnail" /><?php } ?>]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[<?php echo $quote['title']; ?> - <?php echo $quote['text']; ?></label>]]></search>
+            <add><![CDATA[<?php echo $quote['title']; ?> - <?php echo $quote['text']; ?><?php if (isset($quote['instruction']) && $quote['instruction']) { ?><br /><?php echo $quote['instruction']; ?><?php } ?></label>]]></add>
+		</operation>
+    </file>
+	<!--OpenCart v2.x-->
+	<file name="catalog/view/theme/*/template/checkout/shipping.tpl" error="skip">
+		<operation error="skip">
+			<search position="before"><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text'] + '</label></div>';]]></search>
+            <add><![CDATA[if (json['shipping_method'][i]['quote'][j]['image']) { html += '<img src="' + json['shipping_method'][i]['quote'][j]['image'] + '" alt="' + json['shipping_method'][i]['quote'][j]['title'] + '" title="' + json['shipping_method'][i]['quote'][j]['title'] + '" class="img-thumbnail" />'; }]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text'] + '</label></div>';]]></search>
+            <add><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text']; if (json['shipping_method'][i]['quote'][j]['instruction']) { html += '<br />' + json['shipping_method'][i]['quote'][j]['instruction']; } html += '</label></div>';]]></add>
+		</operation>
+    </file>
+</modification>

@@ -1,0 +1,18 @@
+<?php
+// Elektroninių parduotuvių kūrimas: www.el-parduotuve.lt
+// Heading
+$_['heading_title']    = 'Parduotuvės žemėlapis';
+ 
+// Text
+$_['text_special']     = 'Akcijos';
+$_['text_account']     = 'Mano paskyra';
+$_['text_edit']        = 'Paskyros informacija';
+$_['text_password']    = 'Slaptažodis';
+$_['text_address']     = 'Adresų knygelė';
+$_['text_history']     = 'Užsakymų istorija';
+$_['text_download']    = 'Siuntiniai';
+$_['text_cart']        = 'Prekių krepšelis';
+$_['text_checkout']    = 'Atsiskaitymas';
+$_['text_search']      = 'Paieška';
+$_['text_information'] = 'Informacija';
+$_['text_contact']     = 'Susisiekite su mumis';
