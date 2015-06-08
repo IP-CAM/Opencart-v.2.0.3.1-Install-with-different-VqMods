@@ -1,5 +1,5 @@
 <?php
-// HTTP
+// HTTP localhost
 define('HTTP_SERVER', 'http://localhost/OC2.0.2.0/');
 
 // HTTPS
