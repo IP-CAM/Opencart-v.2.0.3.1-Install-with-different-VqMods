@@ -1,77 +1,72 @@
-<modification>
-	<id>Enhanced VQMod Manager and Editor</id>
-	<version>1.0</version>
-	<vqmver>2.5.1</vqmver>
-	<author><![CDATA[NIL]]></author>
-
-<!-- Start menu -->
-	<file name="admin/controller/common/menu.php">
-		<operation error="log">
-			<search position="after"><![CDATA[$data['text_openbay_order_import'] = $this->language->get('text_openbay_order_import');]]>
-		  </search>
-			<add><![CDATA[				
-// Admin Enhanced
-		$data['text_vqmod_manager'] = $this->language->get('text_vqmod_manager');
-// Admin Enhanced
-			]]>
-		  </add>
-		</operation>
-		<operation error="log">
-			<search position="after"><![CDATA[$data['order_recurring'] = $this->url->link('sale/recurring', 'token=' . $this->session->data['token'], 'SSL');]]>
-		  </search>
-			<add><![CDATA[				
-// Admin Enhanced
-		$data['aepro_vqmod_manager'] = $this->url->link('tool/vqmod_manager_aepro', 'token=' . $this->session->data['token'], 'SSL');
-// Admin Enhanced
-			]]>
-		  </add>
-		</operation>
-	</file>
-
-	<file name="admin/language/*/common/menu.php">
-		<operation error="log">
-			<search position="after"><![CDATA[$_['text_api']                         = 'API';]]>
-		  </search>
-			<add><![CDATA[
-// Admin Enhanced
-$_['text_vqmod_manager']	  = 'VQMod Valdymas';
-// Admin Enhanced
-		  ]]>
-		  </add>
-		</operation>
-	</file>
-
-	<file name="admin/view/template/common/menu.tpl">
-		<operation error="log">
-			<search position="before"><![CDATA[<li><a href="<?php echo $upload; ?>"><?php echo $text_upload; ?></a></li>]]>
-		  </search>
-			<add><![CDATA[
-<!-- Admin Enhanced -->
-	  <li><a href="<?php echo $aepro_vqmod_manager; ?>"><?php echo $text_vqmod_manager; ?></a></li>
-<!-- Admin Enhanced -->
-		  ]]>
-		  </add>
-		</operation>
-	</file>
-<!-- End menu -->
-
-<!-- Start save & continue -->
-	<file name="admin/language/*/default.php">
-		<operation error="log">
-		    <search position="after"><![CDATA[
-		    	<?php
-		    ]]></search>
-		    <add><![CDATA[
-$_['text_save_continue']        		   = 'Save & continue editing';
-$_['text_save_close']        		   	   = 'Save & close';
-$_['text_cancel_return']                   = 'Cancel editing';
-$_['button_save_continue']                 = '<i class="fa fa-check"></i> Apply';
-$_['button_save_close']                    = '<i class="fa fa-save"></i> Save';
-$_['button_cancel_return']                 = '<i class="fa fa-close"></i> Cancel';
-$_['save_continue_success']                = 'Successfully Edited!';
-		    ]]></add>
-		</operation>		
-	</file>
-<!-- End save & continue -->
-	
-</modification>
+<modification>
+	<id>Enhanced VQMod Manager and Editor</id>
+	<version>1.0</version>
+	<vqmver>2.5.1</vqmver>
+	<author><![CDATA[NIL]]></author>
+<!-- Start menu -->
+	<file name="admin/controller/common/menu.php">
+		<operation error="log">
+			<search position="after"><![CDATA[$data['text_openbay_order_import'] = $this->language->get('text_openbay_order_import');]]>
+		  </search>
+			<add><![CDATA[				
+// Admin Enhanced
+		$data['text_vqmod_manager'] = $this->language->get('text_vqmod_manager');
+// Admin Enhanced
+			]]>
+		  </add>
+		</operation>
+		<operation error="log">
+			<search position="after"><![CDATA[$data['order_recurring'] = $this->url->link('sale/recurring', 'token=' . $this->session->data['token'], 'SSL');]]>
+		  </search>
+			<add><![CDATA[				
+// Admin Enhanced
+		$data['aepro_vqmod_manager'] = $this->url->link('tool/vqmod_manager_aepro', 'token=' . $this->session->data['token'], 'SSL');
+// Admin Enhanced
+			]]>
+		  </add>
+		</operation>
+	</file>
+	<file name="admin/language/*/common/menu.php">
+		<operation error="log">
+			<search position="after"><![CDATA[$_['text_api']                         = 'API';]]>
+		  </search>
+			<add><![CDATA[
+// Admin Enhanced
+$_['text_vqmod_manager']	  = 'VQMod Valdymas';
+// Admin Enhanced
+		  ]]>
+		  </add>
+		</operation>
+	</file>
+	<file name="admin/view/template/common/menu.tpl">
+		<operation error="log">
+			<search position="before"><![CDATA[<li><a href="<?php echo $upload; ?>"><?php echo $text_upload; ?></a></li>]]>
+		  </search>
+			<add><![CDATA[
+<!-- Admin Enhanced -->
+	  <li><a href="<?php echo $aepro_vqmod_manager; ?>"><?php echo $text_vqmod_manager; ?></a></li>
+<!-- Admin Enhanced -->
+		  ]]>
+		  </add>
+		</operation>
+	</file>
+<!-- End menu -->
+<!-- Start save & continue -->
+	<file name="admin/language/*/default.php">
+		<operation error="log">
+		    <search position="after"><![CDATA[
+		    	<?php
+		    ]]></search>
+		    <add><![CDATA[
+$_['text_save_continue']        		   = 'Save & continue editing';
+$_['text_save_close']        		   	   = 'Save & close';
+$_['text_cancel_return']                   = 'Cancel editing';
+$_['button_save_continue']                 = '<i class="fa fa-check"></i> Apply';
+$_['button_save_close']                    = '<i class="fa fa-save"></i> Save';
+$_['button_cancel_return']                 = '<i class="fa fa-close"></i> Cancel';
+$_['save_continue_success']                = 'Successfully Edited!';
+		    ]]></add>
+		</operation>		
+	</file>
+<!-- End save & continue -->
+</modification>
