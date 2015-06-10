@@ -161,15 +161,10 @@
   <li id="tools"><a class="parent"><i class="fa fa-wrench fa-fw"></i> <span><?php echo $text_tools; ?></span></a>
     <ul>
 
-
 <!-- Admin Enhanced -->
-
 	  <li><a href="<?php echo $aepro_vqmod_manager; ?>"><?php echo $text_vqmod_manager; ?></a></li>
-
 <!-- Admin Enhanced -->
-
 		  
-
 		  
       <li><a href="<?php echo $upload; ?>"><?php echo $text_upload; ?></a></li>
       <li><a href="<?php echo $backup; ?>"><?php echo $text_backup; ?></a></li>

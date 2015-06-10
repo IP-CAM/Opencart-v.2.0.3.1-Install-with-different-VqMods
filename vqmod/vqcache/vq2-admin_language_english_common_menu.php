@@ -3,15 +3,10 @@
 $_['text_affiliate']                   = 'Affiliates';
 $_['text_api']                         = 'API';
 
-
 // Admin Enhanced
-
 $_['text_vqmod_manager']	  = 'VQMod Valdymas';
-
 // Admin Enhanced
-
 		  
-
 		  
 $_['text_attribute']                   = 'Attributes';
 $_['text_attribute_group']             = 'Attribute Groups';
