@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Google and Paysera</id>
+	<version>2.0.2.0 and above</version>
+	<author>gedamin</author>
+	<file name="catalog\view\theme\*\template\common\header.tpl">
+		<operation>
+			<search position="after"><![CDATA[<?php echo $google_analytics; ?>]]></search>
+			<add><![CDATA[<?php echo $google_webmaster; ?>
+<?php echo $google_meta; ?>
+<?php echo $paysera_meta; ?>]]></add>
+		</operation>
+		<operation>
+			<search position="after" offset="0"><![CDATA[<body]]></search>
+			<add><![CDATA[<?php echo $google_tagmanager; ?>]]></add>
+		</operation>
+	</file>
+	<file name="catalog\view\theme\*\template\common\footer.tpl">
+		<operation>
+			<search position="before"><![CDATA[</body>]]></search>
+			<add><![CDATA[
+				<?php echo $google_adwords; ?>
+				<?php echo $google_paysera_zenklas; ?>
+			]]></add>
+		</operation>
+	</file>
+</modification>
