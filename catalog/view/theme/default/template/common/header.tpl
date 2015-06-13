@@ -37,12 +37,8 @@
 <script src="<?php echo $script; ?>" type="text/javascript"></script>
 <?php } ?>
 <?php echo $google_analytics; ?>
-<?php echo $google_webmaster; ?>
-<?php echo $google_meta; ?>
-<?php echo $paysera_meta; ?>
 </head>
 <body class="<?php echo $class; ?>">
-<?php echo $google_tagmanager; ?>
 <nav id="top">
   <div class="container">
     <?php echo $currency; ?>
