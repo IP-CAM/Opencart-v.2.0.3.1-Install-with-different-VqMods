@@ -5,15 +5,10 @@ $_['text_affiliate']                   = 'Partnerystė';
 $_['text_affiliate_activity']          = 'Partnerystės aktyvumas';
 $_['text_api']                         = 'API';
 
-
 // Admin Enhanced
-
 $_['text_vqmod_manager']	  = 'VQMod Valdymas';
-
 // Admin Enhanced
-
 		  
-
 		  
 $_['text_attribute']                   = 'Atributai';
 $_['text_attribute_group']             = 'Atributų grupės';

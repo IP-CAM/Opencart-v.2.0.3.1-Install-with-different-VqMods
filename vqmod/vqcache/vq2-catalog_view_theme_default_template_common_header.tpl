@@ -10,6 +10,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?php echo $title; ?></title>
 <base href="<?php echo $base; ?>" />
+<?php if (isset($alternate)) {echo $alternate;} ?>
+			
 <?php if ($description) { ?>
 <meta name="description" content="<?php echo $description; ?>" />
 <?php } ?>
@@ -37,8 +39,12 @@
 <script src="<?php echo $script; ?>" type="text/javascript"></script>
 <?php } ?>
 <?php echo $google_analytics; ?>
+<?php echo $google_webmaster; ?>
+<?php echo $google_meta; ?>
+<?php echo $paysera_meta; ?>
 </head>
 <body class="<?php echo $class; ?>">
+<?php echo $google_tagmanager; ?>
 <nav id="top">
   <div class="container">
     <?php echo $currency; ?>

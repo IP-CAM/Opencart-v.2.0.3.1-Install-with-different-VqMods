@@ -105,15 +105,10 @@ class ControllerCommonMenu extends Controller {
 		$data['text_openbay_report_price'] = $this->language->get('text_openbay_report_price');
 		$data['text_openbay_order_import'] = $this->language->get('text_openbay_order_import');
 				
-
 // Admin Enhanced
-
 		$data['text_vqmod_manager'] = $this->language->get('text_vqmod_manager');
-
 // Admin Enhanced
-
 			
-
 		  
 		//extra
 		$data['text_product_extra'] = $this->language->get('text_product_extra');
@@ -192,15 +187,10 @@ class ControllerCommonMenu extends Controller {
 		$data['recurring'] = $this->url->link('catalog/recurring', 'token=' . $this->session->data['token'], 'SSL');
 		$data['order_recurring'] = $this->url->link('sale/recurring', 'token=' . $this->session->data['token'], 'SSL');
 				
-
 // Admin Enhanced
-
 		$data['aepro_vqmod_manager'] = $this->url->link('tool/vqmod_manager_aepro', 'token=' . $this->session->data['token'], 'SSL');
-
 // Admin Enhanced
-
 			
-
 		  
 //extra
 	$data['product_extra'] = $this->url->link('catalog/product_extra', 'token=' . $this->session->data['token'], 'SSL');

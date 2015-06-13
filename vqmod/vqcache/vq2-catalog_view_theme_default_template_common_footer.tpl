@@ -42,4 +42,8 @@
     <p><?php echo $powered; ?></p>
   </div>
 </footer>
+
+				<?php echo $google_adwords; ?>
+				<?php echo $google_paysera_zenklas; ?>
+			
 </body></html>
