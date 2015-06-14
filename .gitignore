@@ -1,2 +1,4 @@
 vqmod/vqcache/*
 system/cache/*
+system/logs/error.log
+image/cache/*
