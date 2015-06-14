@@ -177,3 +177,7 @@ catalog\controller\module\filter.php
 catalog\language\english\module\filter.php
 catalog\language\lithuanian\module\filter.php
 catalog\view\theme\default\template\product\category.tpl
+admin\language\english\catalog\category.php
+admin\language\lithuanian\catalog\category.php
+admin\view\template\catalog\category_list.tpl
+catalog\view\theme\default\template\module\filter.tpl

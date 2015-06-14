@@ -1,2 +1,2 @@
-vqmod\vqcache\*
-system\cache\*
+vqmod/vqcache/*
+system/cache/*
