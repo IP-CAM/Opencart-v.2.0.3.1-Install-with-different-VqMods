@@ -1,5 +1,5 @@
 vqmod/vqcache/*
-vqmod/vqcache/checked.cache
+vqmod/checked.cache
 system/cache/*
 system/logs/error.log
 system/logs/*
