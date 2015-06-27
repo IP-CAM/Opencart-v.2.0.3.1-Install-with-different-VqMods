@@ -6,8 +6,8 @@ $_['heading_title']         = 'Užsakymų istorija';
 // Text
 $_['text_account']          = 'Paskyra';
 $_['text_address']          = 'Redaguoti savo adresus';
-$_['text_order']            = 'Užsakymo detalės';
-$_['text_order_detail']     = 'Užsakymo detalės';
+$_['text_order']            = 'Užsakymo informacija';
+$_['text_order_detail']     = 'Užsakymo informacija';
 $_['text_invoice_no']       = 'Sąskaitos faktūros Nr.';
 $_['text_order_id']         = 'Užsakymo Nr.';
 $_['text_status']           = 'Būsena';
