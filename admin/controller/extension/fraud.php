@@ -1,54 +1,67 @@
 <?php
-class ControllerFraudMaxMind extends Controller {
+class ControllerExtensionFraud extends Controller {
 	private $error = array();
 
 	public function index() {
-		$this->load->language('fraud/maxmind');
+		$this->load->language('extension/fraud');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
-		$this->load->model('setting/setting');
+		$this->load->model('extension/extension');
 
-		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-			$this->model_setting_setting->editSetting('maxmind', $this->request->post);
+		$this->getList();
+	}
+
+	public function install() {
+		$this->load->language('extension/fraud');
+
+		$this->document->setTitle($this->language->get('heading_title'));
+
+		$this->load->model('extension/extension');
+
+		if ($this->validate()) {
+			$this->model_extension_extension->install('fraud', $this->request->get['extension']);
+
+			$this->load->model('user/user_group');
+
+			$this->model_user_user_group->addPermission($this->user->getGroupId(), 'access', 'fraud/' . $this->request->get['extension']);
+			$this->model_user_user_group->addPermission($this->user->getGroupId(), 'modify', 'fraud/' . $this->request->get['extension']);
+
+			// Call install method if it exsits
+			$this->load->controller('fraud/' . $this->request->get['extension'] . '/install');
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
 			$this->response->redirect($this->url->link('extension/fraud', 'token=' . $this->session->data['token'], 'SSL'));
 		}
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_edit'] = $this->language->get('text_edit');
-		$data['text_enabled'] = $this->language->get('text_enabled');
-		$data['text_disabled'] = $this->language->get('text_disabled');
-		$data['text_signup'] = $this->language->get('text_signup');
+		$this->getList();
+	}
 
-		$data['entry_key'] = $this->language->get('entry_key');
-		$data['entry_score'] = $this->language->get('entry_score');
-		$data['entry_order_status'] = $this->language->get('entry_order_status');
-		$data['entry_status'] = $this->language->get('entry_status');
+	public function uninstall() {
+		$this->load->language('extension/fraud');
 
-		$data['help_score'] = $this->language->get('help_score');
-		$data['help_order_status'] = $this->language->get('help_order_status');
+		$this->document->setTitle($this->language->get('heading_title'));
 
-		$data['button_save'] = $this->language->get('button_save');
-		$data['button_cancel'] = $this->language->get('button_cancel');
+		$this->load->model('extension/extension');
 
-		$data['tab_general'] = $this->language->get('tab_general');
+		if ($this->validate()) {
+			$this->model_extension_extension->uninstall('fraud', $this->request->get['extension']);
 
-		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
-		} else {
-			$data['error_warning'] = '';
+			$this->load->model('setting/setting');
+
+			$this->model_setting_setting->deleteSetting($this->request->get['extension']);
+
+			// Call uninstall method if it exsits
+			$this->load->controller('fraud/' . $this->request->get['extension'] . '/uninstall');
+
+			$this->session->data['success'] = $this->language->get('text_success');
+
+			$this->response->redirect($this->url->link('extension/fraud', 'token=' . $this->session->data['token'], 'SSL'));
 		}
-		
-		if (isset($this->error['key'])) {
-			$data['error_key'] = $this->error['key'];
-		} else {
-			$data['error_key'] = '';
-		}
-		
+	}
+
+	public function getList() {
 		$data['breadcrumbs'] = array();
 
 		$data['breadcrumbs'][] = array(
@@ -57,63 +70,81 @@ class ControllerFraudMaxMind extends Controller {
 		);
 
 		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_fraud'),
+			'text' => $this->language->get('heading_title'),
 			'href' => $this->url->link('extension/fraud', 'token=' . $this->session->data['token'], 'SSL')
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('fraud/maxmind', 'token=' . $this->session->data['token'], 'SSL')
-		);
+		$data['heading_title'] = $this->language->get('heading_title');
 
-		$data['action'] = $this->url->link('fraud/maxmind', 'token=' . $this->session->data['token'], 'SSL');
+		$data['text_list'] = $this->language->get('text_list');
+		$data['text_no_results'] = $this->language->get('text_no_results');
+		$data['text_confirm'] = $this->language->get('text_confirm');
 
-		$data['cancel'] = $this->url->link('extension/fraud', 'token=' . $this->session->data['token'], 'SSL');
+		$data['column_name'] = $this->language->get('column_name');
+		$data['column_status'] = $this->language->get('column_status');
+		$data['column_action'] = $this->language->get('column_action');
 
-		if (isset($this->request->post['maxmind_key'])) {
-			$data['maxmind_key'] = $this->request->post['maxmind_key'];
+		$data['button_edit'] = $this->language->get('button_edit');
+		$data['button_install'] = $this->language->get('button_install');
+		$data['button_uninstall'] = $this->language->get('button_uninstall');
+
+		if (isset($this->error['warning'])) {
+			$data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['maxmind_key'] = $this->config->get('maxmind_key');
+			$data['error_warning'] = '';
 		}
 
-		if (isset($this->request->post['maxmind_score'])) {
-			$data['maxmind_score'] = $this->request->post['maxmind_score'];
+		if (isset($this->session->data['success'])) {
+			$data['success'] = $this->session->data['success'];
+
+			unset($this->session->data['success']);
 		} else {
-			$data['maxmind_score'] = $this->config->get('maxmind_score');
+			$data['success'] = '';
 		}
 
-		if (isset($this->request->post['maxmind_order_status_id'])) {
-			$data['maxmind_order_status_id'] = $this->request->post['maxmind_order_status_id'];
-		} else {
-			$data['maxmind_order_status_id'] = $this->config->get('maxmind_order_status_id');
-		}
-		
-		$this->load->model('localisation/order_status');
+		$extensions = $this->model_extension_extension->getInstalled('fraud');
 
-		$data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
-		
-		if (isset($this->request->post['maxmind_status'])) {
-			$data['maxmind_status'] = $this->request->post['maxmind_status'];
-		} else {
-			$data['maxmind_status'] = $this->config->get('maxmind_status');
+		foreach ($extensions as $key => $value) {
+			if (!file_exists(DIR_APPLICATION . 'controller/fraud/' . $value . '.php')) {
+				$this->model_extension_extension->uninstall('fraud', $value);
+
+				unset($extensions[$key]);
+			}
+		}
+
+		$data['extensions'] = array();
+
+		$files = glob(DIR_APPLICATION . 'controller/fraud/*.php');
+
+		if ($files) {
+			foreach ($files as $file) {
+				$extension = basename($file, '.php');
+
+				$this->load->language('fraud/' . $extension);
+
+				$data['extensions'][] = array(
+					'name'      => $this->language->get('heading_title'),
+					'status'    => $this->config->get($extension . '_status') ? $this->language->get('text_enabled') : $this->language->get('text_disabled'),
+					'install'   => $this->url->link('extension/fraud/install', 'token=' . $this->session->data['token'] . '&extension=' . $extension, 'SSL'),
+					'uninstall' => $this->url->link('extension/fraud/uninstall', 'token=' . $this->session->data['token'] . '&extension=' . $extension, 'SSL'),
+					'installed' => in_array($extension, $extensions),
+					'edit'      => $this->url->link('fraud/' . $extension . '', 'token=' . $this->session->data['token'], 'SSL')
+				);
+			}
 		}
 
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
 
-		$this->response->setOutput($this->load->view('fraud/maxmind.tpl', $data));
+		$this->response->setOutput($this->load->view('extension/fraud.tpl', $data));
 	}
 
 	protected function validate() {
-		if (!$this->user->hasPermission('modify', 'fraud/maxmind')) {
+		if (!$this->user->hasPermission('modify', 'extension/fraud')) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
-		
-		if (!$this->request->post['maxmind_key']) {
-			$this->error['key'] = $this->language->get('error_key');
-		}
-		
+
 		return !$this->error;
 	}
 }

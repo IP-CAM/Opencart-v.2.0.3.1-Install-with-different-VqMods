@@ -633,10 +633,10 @@ class ControllerProductProduct extends Controller {
 					if (!$recaptcha['success']) {
 						$json['error'] = $this->language->get('error_captcha');
 					}
-			} else {
+				} else {
 					$json['error'] = $this->language->get('error_captcha');
+				}
 			}
-		}
 
 			if (!isset($json['error'])) {
 				$this->load->model('catalog/review');

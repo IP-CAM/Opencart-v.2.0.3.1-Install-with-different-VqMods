@@ -102,7 +102,7 @@ class ControllerCommonLogin extends Controller {
 
 	public function check() {
 		$route = isset($this->request->get['route']) ? $this->request->get['route'] : '';
-		
+
 		$ignore = array(
 			'common/login',
 			'common/forgotten',

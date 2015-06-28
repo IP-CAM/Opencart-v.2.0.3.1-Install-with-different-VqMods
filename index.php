@@ -162,7 +162,7 @@ if (isset($session->data['language']) && array_key_exists($session->data['langua
 			}
 		}
 	}
-	
+
 	$code = $detect ? $detect : $config->get('config_language');
 }
 

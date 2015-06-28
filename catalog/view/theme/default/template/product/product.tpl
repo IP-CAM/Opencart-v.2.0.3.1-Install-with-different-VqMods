@@ -69,7 +69,7 @@
             <?php } ?>
             <?php if ($review_status) { ?>
             <div class="tab-pane" id="tab-review">
-                <form class="form-horizontal" id="form-review">
+              <form class="form-horizontal" id="form-review">
                 <div id="review"></div>
                 <h2><?php echo $text_write; ?></h2>
                 <?php if ($review_guest) { ?>

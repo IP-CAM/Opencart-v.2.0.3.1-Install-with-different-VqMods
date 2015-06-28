@@ -1158,15 +1158,8 @@ class ControllerSaleCustomer extends Controller {
 		$customer_info = $this->model_sale_customer->getCustomer($customer_id);
 
 		if ($customer_info) {
-			// Create token to login with
-			$string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-			
-			$token = '';
-			
-			for ($i = 0; $i < 64; $i++) {
-				$token .= $string[rand(0, strlen($string) - 1)];
-			}
-			
+			$token = md5(mt_rand());
+
 			$this->model_sale_customer->editToken($customer_id, $token);
 
 			if (isset($this->request->get['store_id'])) {
@@ -1448,14 +1441,16 @@ class ControllerSaleCustomer extends Controller {
 
 		$json = array();
 
-		if (!$this->user->hasPermission('modify', 'sale/customer')) {
-			$json['error'] = $this->language->get('error_permission');
-		} else {
-			$this->load->model('sale/customer');
+		if (isset($this->request->post['ip'])) {
+			if (!$this->user->hasPermission('modify', 'sale/customer')) {
+				$json['error'] = $this->language->get('error_permission');
+			} else {
+				$this->load->model('sale/customer');
 
-			$this->model_sale_customer->addBanIp($this->request->post['ip']);
+				$this->model_sale_customer->addBanIp($this->request->post['ip']);
 
-			$json['success'] = $this->language->get('text_success');
+				$json['success'] = $this->language->get('text_success');
+			}
 		}
 
 		$this->response->addHeader('Content-Type: application/json');
@@ -1467,14 +1462,16 @@ class ControllerSaleCustomer extends Controller {
 
 		$json = array();
 
-		if (!$this->user->hasPermission('modify', 'sale/customer')) {
-			$json['error'] = $this->language->get('error_permission');
-		} else {
-			$this->load->model('sale/customer');
+		if (isset($this->request->post['ip'])) {
+			if (!$this->user->hasPermission('modify', 'sale/customer')) {
+				$json['error'] = $this->language->get('error_permission');
+			} else {
+				$this->load->model('sale/customer');
 
-			$this->model_sale_customer->removeBanIp($this->request->post['ip']);
+				$this->model_sale_customer->removeBanIp($this->request->post['ip']);
 
-			$json['success'] = $this->language->get('text_success');
+				$json['success'] = $this->language->get('text_success');
+			}
 		}
 
 		$this->response->addHeader('Content-Type: application/json');
@@ -1574,4 +1571,31 @@ class ControllerSaleCustomer extends Controller {
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
+
+	public function country() {
+		$json = array();
+
+		$this->load->model('localisation/country');
+
+		$country_info = $this->model_localisation_country->getCountry($this->request->get['country_id']);
+
+		if ($country_info) {
+			$this->load->model('localisation/zone');
+
+			$json = array(
+				'country_id'        => $country_info['country_id'],
+				'name'              => $country_info['name'],
+				'iso_code_2'        => $country_info['iso_code_2'],
+				'iso_code_3'        => $country_info['iso_code_3'],
+				'address_format'    => $country_info['address_format'],
+				'postcode_required' => $country_info['postcode_required'],
+				'zone'              => $this->model_localisation_zone->getZonesByCountryId($this->request->get['country_id']),
+				'status'            => $country_info['status']
+			);
+		}
+
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
+	}
+
 }
