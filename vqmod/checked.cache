@@ -362,3 +362,7 @@ admin\language\english\sale\customer_ban_ip.php
 admin\language\lithuanian\sale\customer_ban_ip.php
 admin\model\sale\customer_ban_ip.php
 admin\view\template\sale\customer_ban_ip_list.tpl
+admin\language\english\error\permission.php
+admin\language\lithuanian\error\permission.php
+admin\view\template\error\permission.tpl
+admin\language\english\payment\g2apay.php
