@@ -26,5 +26,5 @@ define('DB_DRIVER', 'mysqli');
 define('DB_HOSTNAME', 'localhost');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
-define('DB_DATABASE', 'OC2.0.2.0');
+define('DB_DATABASE', 'oc2.0.2.0');
 define('DB_PREFIX', '');
