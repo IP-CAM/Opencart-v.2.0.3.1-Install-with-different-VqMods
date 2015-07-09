@@ -11,7 +11,7 @@ $_['text_order_detail']     = 'Užsakymo informacija';
 $_['text_invoice_no']       = 'Sąskaitos faktūros Nr.';
 $_['text_order_id']         = 'Užsakymo Nr.';
 $_['text_status']           = 'Būsena';
-$_['text_date_added']       = 'Pridėjimo data';
+$_['text_date_added']       = 'Užsakymo data';
 $_['text_customer']         = 'Klientas';
 $_['text_shipping_address'] = 'Pristatymo adresas';
 $_['text_shipping_method']  = 'Pristatymo metodas';
@@ -41,7 +41,7 @@ $_['column_quantity']       = 'Kiekis';
 $_['column_price']          = 'Kaina';
 $_['column_total']          = 'Iš viso';
 $_['column_action']         = 'Veiksmas';
-$_['column_date_added']     = 'Pridėjimo data';
+$_['column_date_added']     = 'Užsakymo data';
 $_['column_status']         = 'Būsena';
 $_['column_comment']        = 'Komentaras';
 
