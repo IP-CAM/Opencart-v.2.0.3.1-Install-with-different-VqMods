@@ -1766,6 +1766,8 @@ class ControllerSaleOrder extends Controller {
 		$data['column_total'] = $this->language->get('column_total');
 		$data['column_comment'] = $this->language->get('column_comment');
 
+		$data['text_seller'] = $this->language->get('text_seller');
+		
 		$this->load->model('sale/order');
 
 		$this->load->model('setting/setting');

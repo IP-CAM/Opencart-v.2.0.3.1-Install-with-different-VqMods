@@ -128,6 +128,7 @@ $_['text_history']                            = 'Pridėti prie užsakymų istori
 $_['text_shipping']                           = 'Pristatymas';
 $_['text_contact']                            = 'Kontaktai';
 $_['text_from']                               = 'Siunčiama iš';
+$_['text_seller']      						  = 'Pardavėjas';
 
 // Column
 $_['column_order_id']         = 'Užsakymo Nr.';
