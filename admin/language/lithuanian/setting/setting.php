@@ -25,7 +25,7 @@ $_['text_return']              = 'Grąžinimai';
 $_['text_affiliate']           = 'Partnerystės programa';
 
 // Entry
-$_['entry_name']               = 'Parduotuvės pavadinimas';
+$_['entry_name']               = 'Parduotuvės/įmonės pavadinimas';
 $_['entry_owner']              = 'Parduotuvės sąvininkas';
 $_['entry_address']            = 'Adresas';
 $_['entry_geocode']            = 'Adresas (atvaizdavimui google žemėlapyje)';
