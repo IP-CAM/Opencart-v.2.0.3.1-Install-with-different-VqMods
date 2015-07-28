@@ -353,8 +353,8 @@ class ControllerCommonFileManager extends Controller {
         	'roots' => array(
         		array(
         			'driver'        => 'LocalFileSystem',   // driver for accessing file system (REQUIRED)
-        			'path'          => DIR_IMAGE.'catalog/',         // path to files (REQUIRED)
-        			'URL'           => $base.'catalog/', // URL to files (REQUIRED)
+        			'path'          => DIR_IMAGE,         // path to files (REQUIRED)
+        			'URL'           => $base, // URL to files (REQUIRED)
         			'tmbURL'       => $tmbPath,
         			'accessControl' => 'access',             // disable and hide dot starting files (OPTIONAL)
               'fileMode'     => 0777,         // new files mode
