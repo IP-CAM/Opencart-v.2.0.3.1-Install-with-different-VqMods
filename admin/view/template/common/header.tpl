@@ -86,7 +86,7 @@
         <li class="divider"></li>
         <li class="dropdown-header"><?php echo $text_help; ?> <i class="fa fa-life-ring"></i></li>
         <!-- <li><a href="http://www.opencart.com" target="_blank"><?php echo $text_homepage; ?></a></li> -->
-        <li><a href="http://www.el-parduotuve.lt/opencart-valdymas.php" target="_blank"><?php echo $text_documentation; ?></a></li>
+        <li><a href="http://www.el-parduotuve.lt/dokumentacija.php" target="_blank"><?php echo $text_documentation; ?></a></li>
         <li><a href="http://www.seopaslaptys.lt" target="_blank"><?php echo $text_support; ?></a></li>
       </ul>
     </li>
