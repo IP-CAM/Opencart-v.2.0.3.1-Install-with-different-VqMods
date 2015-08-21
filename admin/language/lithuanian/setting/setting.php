@@ -25,8 +25,8 @@ $_['text_return']              = 'Grąžinimai';
 $_['text_affiliate']           = 'Partnerystės programa';
 
 // Entry
-$_['entry_name']               = 'Parduotuvės pavadinimas';
-$_['entry_owner']              = 'Parduotuvės savininkas';
+$_['entry_name']               = 'Parduotuvės/įmonės pavadinimas';
+$_['entry_owner']              = 'Parduotuvės sąvininkas';
 $_['entry_address']            = 'Adresas';
 $_['entry_geocode']            = 'Adresas (atvaizdavimui google žemėlapyje)';
 $_['entry_email']              = 'El. paštas';
@@ -233,7 +233,7 @@ $_['help_google_meta']   = 'Prisijunkite prie <a href="https://www.mokejimai.lt/
 $_['error_warning']            = 'Įspėjimas: Patikrinkite ar nėra klaidų!';
 $_['error_permission']         = 'Įspėjimas: Jūs neturite teisės modifikuoti nustatymus!';
 $_['error_name']               = 'Parduotuvės pavadinimas turi būti nuo 3 iki 32 simbolių!';
-$_['error_owner']              = 'Parduotuvės savininkas turi būti nuo 3 iki 64 simbolių!';
+$_['error_owner']              = 'Parduotuvės sąvininkas turi būti nuo 3 iki 64 simbolių!';
 $_['error_address']            = 'Parduotuvės adresas turi būti nuo 10 iki 256 simbolių!';
 $_['error_email']              = 'Neteisingas el. pašto adresas!';
 $_['error_telephone']          = 'Telefonas turi būti nuo 3 iki 32 simbolių!';

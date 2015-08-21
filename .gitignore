@@ -1,2 +1,21 @@
-vqmod/vqcache/*
-system/cache/*
+#vqmod
+/vqmod/vqcache/*
+/vqmod/checked.cache
+
+# System Cache Files
+/system/cache/*
+!/system/cache/index.html
+
+# Log Files
+/system/logs/*
+!/system/logs/index.html
+/system/logs/error.log
+
+# Image Cache Files
+/image/cache/*
+!/image/cache/index.html
+
+
+# Modification Files
+/system/modification/*
+!/system/modification/index.html

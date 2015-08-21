@@ -128,12 +128,20 @@ $_['entry_error_display']              = 'Display Errors';
 $_['entry_error_log']                  = 'Log Errors';
 $_['entry_error_filename']             = 'Error Log Filename';
 $_['entry_google_analytics']           = 'Google Analytics Code';
-$_['entry_google_adwords']   = 'Google Adwords remarketing code:';
-$_['entry_google_webmaster']   = 'Google webmaster code:';
-$_['entry_google_tagmanager']   = 'Google TAG manager code:';
+$_['entry_google_adwords']  		   = 'Google Adwords remarketing code:';
+$_['entry_google_webmaster']  		   = 'Google webmaster code:';
+$_['entry_google_tagmanager']          = 'Google TAG manager code:';
 $_['entry_google_captcha_public']      = 'Site key';
 $_['entry_google_captcha_secret']      = 'Secret key';
 $_['entry_status']                     = 'Status';
+
+//paysera
+$_['entry_google_meta']   				= 'Paysera ownership verification code';
+$_['help_google_meta']   				= 'Paysera.lt code example: &lt;&shy;meta name=&quot;verify-paysera&quot;content=&quot;3f88dfe55595c1127951ed0e25ddfd14&quot;&gt;';
+
+$_['entry_google_paysera_zenklas']   	= 'Paysera quality mark code';
+$_['help_google_paysera_zenklas']   	= 'Paysera.lt code you will finde in your project';
+//paysera
 
 // Help
 $_['help_geocode']                     = 'Please enter your store location geocode manually.';

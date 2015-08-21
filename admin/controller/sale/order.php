@@ -864,12 +864,12 @@ class ControllerSaleOrder extends Controller {
 		$this->load->model('sale/custom_field');
 
 		$data['custom_fields'] = array();
-		
+
 		$filter_data = array(
 			'sort'  => 'cf.sort_order',
 			'order' => 'ASC'
 		);
-		
+
 		$custom_fields = $this->model_sale_custom_field->getCustomFields($filter_data);
 
 		foreach ($custom_fields as $custom_field) {
@@ -1766,6 +1766,8 @@ class ControllerSaleOrder extends Controller {
 		$data['column_total'] = $this->language->get('column_total');
 		$data['column_comment'] = $this->language->get('column_comment');
 
+		$data['text_seller'] = $this->language->get('text_seller');
+		
 		$this->load->model('sale/order');
 
 		$this->load->model('setting/setting');
@@ -2211,9 +2213,9 @@ class ControllerSaleOrder extends Controller {
 			}
 		} else {
 			$response = array();
-			
+
 			$response['error'] = $this->error;
-			
+
 			$json = json_encode($response);
 		}
 

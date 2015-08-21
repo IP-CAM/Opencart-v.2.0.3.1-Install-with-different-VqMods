@@ -14,11 +14,13 @@
 <div class="container">
   <?php foreach ($orders as $order) { ?>
   <div style="page-break-after: always;">
-    <h1><?php echo $text_invoice; ?> #<?php echo $order['order_id']; ?></h1>
+     <h2><?php echo $text_invoice; ?><br /><?php if ($order['invoice_no']) { ?>
+      <?php echo $order['invoice_no']; ?><br /><?php } ?></h2>
     <table class="table table-bordered">
       <thead>
         <tr>
-          <td colspan="2"><?php echo $text_order_detail; ?></td>
+          <td style="width: 50%;"><b><?php echo $text_seller; ?></b></td>
+          <td style="width: 50%;"><b><?php echo $text_order_detail; ?></b></td>
         </tr>
       </thead>
       <tbody>

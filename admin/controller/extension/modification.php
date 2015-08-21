@@ -60,12 +60,11 @@ class ControllerExtensionModification extends Controller {
 
 		if ($this->validate()) {
 			// Just before files are deleted, if config settings say maintenance mode is off then turn it on
-			$org_maintenance = $this->config->get('config_maintenance');
-			if (!$this->config->get('config_maintenance')) {
-				$this->load->model('setting/setting');
+			$maintenance = $this->config->get('config_maintenance');
+			
+			$this->load->model('setting/setting');
 
-				$this->model_setting_setting->editSettingValue('config', 'config_maintenance', true);
-			}
+			$this->model_setting_setting->editSettingValue('config', 'config_maintenance', true);
 
 			//Log
 			$log = array();
@@ -323,9 +322,9 @@ class ControllerExtensionModification extends Controller {
 
 											$modification[$key] = implode("\n", $lines);
 										} else {
-											$search = $operation->getElementsByTagName('search')->item(0)->textContent;
+											$search = trim($operation->getElementsByTagName('search')->item(0)->textContent);
 											$limit = $operation->getElementsByTagName('search')->item(0)->getAttribute('limit');
-											$replace = $operation->getElementsByTagName('add')->item(0)->textContent;
+											$replace = trim($operation->getElementsByTagName('add')->item(0)->textContent);
 
 											// Limit
 											if (!$limit) {
@@ -414,10 +413,8 @@ class ControllerExtensionModification extends Controller {
 				}
 			}
 
-			// Just after modifications are complete, if config settings say maintenance mode is on AND is different org state, then turn it back on
-			if ($org_maintenance != $this->config->get('config_maintenance')) {
-				$this->model_setting_setting->editSettingValue('config', 'config_maintenance', false);
-			}
+			// Maintance mode back to original settings
+			$this->model_setting_setting->editSettingValue('config', 'config_maintenance', $maintenance);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
