@@ -14,4 +14,4 @@ $_['text_order']          = 'Užsakymų istorija';
 $_['text_transaction']    = 'Kreditai';
 $_['text_download']       = 'Siuntiniai';
 $_['text_logout']         = 'Atsijungti';
-$_['text_all']            = 'Žiūrėti visus';
+$_['text_all']            = 'Žiūrėti viską: <br/>';
