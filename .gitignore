@@ -19,5 +19,4 @@
 # Modification Files
 /system/modification/*
 !/system/modification/index.html
-vqmod/vqcache/vq2-admin_language_english_common_menu.php
-vqmod/vqcache/vq2-admin_language_english_common_menu.php
+vqmod/vqcache/*
