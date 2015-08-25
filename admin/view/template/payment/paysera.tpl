@@ -31,6 +31,12 @@
         </div>
 
 
+
+
+
+
+
+
     <div class="panel-body">
         <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" id="form-paysera" class="form-horizontal">
             <div class="form-group required">
@@ -77,6 +83,22 @@
                         <option value="0"><?php echo $text_off; ?></option>
                         <option value="100" selected="selected"><?php echo $text_on; ?></option>
                         <?php endif;?>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-new-order-status"><?php echo $entry_new_order_status; ?></label>
+                <div class="col-sm-10">
+                    <select name="paysera_new_order_status_id" id="input-new-order-status" class="form-control">
+                        <?php foreach ($order_statuses as $order_status) { ?>
+                        <?php if ($order_status['order_status_id'] == $paysera_new_order_status_id) { ?>
+                        <option value="<?php echo $order_status['order_status_id']; ?>" selected="selected"><?php echo $order_status['name']; ?></option>
+                        <?php } else { ?>
+                        <option value="<?php echo $order_status['order_status_id']; ?>"><?php echo $order_status['name']; ?></option>
+                        <?php } ?>
+                        <?php } ?>
                     </select>
                 </div>
             </div>
