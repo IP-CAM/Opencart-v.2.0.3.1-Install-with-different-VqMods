@@ -27,7 +27,7 @@ $_['copy_default_product_title']    = 'Daryti produkto kopiją';
 
 $_['image_column_switch']           = 'Paveiksliukas';
 $_['product_column_switch']         = 'Produktas';
-$_['model_column_switch']           = 'Modelis';
+$_['model_column_switch']           = 'Prekės kodas';
 $_['category_column_switch']        = 'Kategorija';
 $_['manufacturer_column_switch']    = 'Gamintojas';
 $_['stores_column_switch']          = 'Parduotuvės';
