@@ -24,22 +24,26 @@ class ControllerPaymentPaysera extends Controller {
         } else {
             $data['back'] = HTTPS_SERVER . 'index.php?route=checkout/guest';
         }
+
+
+
         $data['projectId'] = $this->config->get('paysera_project');
-        $data['payment_country'] = $this->session->data['payment_address']['iso_code_2'];
         $this->id = 'payment';
 //countries
         $this->load->model('checkout/order');
         $order  = $this->model_checkout_order->getOrder($this->session->data['order_id']);
+	$data['payment_country'] = $order['payment_iso_code_2']; 
         $amount = ceil($order['total'] * $this->currency->getvalue($order['currency_code']) * 100);
-
-        $language  = $this->language->get('code');
+        $amount = $amount<1?100:$amount;
+        $language  = $order['language_code'];
         $projectId = $this->config->get('paysera_project');
 
         $methods = WebToPay::getPaymentMethodList($projectId, $order['currency_code'])
             ->filterForAmount($amount, $order['currency_code'])
-            ->setDefaultLanguage($language); //print_r($methods->getCountries());
+            ->setDefaultLanguage($language);
         $data['evp_countries'] = $methods->getCountries();
 //end countries
+
 
 
         if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/paysera.tpl')) {
@@ -98,6 +102,8 @@ class ControllerPaymentPaysera extends Controller {
             exit($e->getMessage());
         }
         $this->load->model('checkout/order');
+
+	    $this->model_checkout_order->addOrderHistory($order['order_id'], $this->config->get('paysera_new_order_status_id'));
         //$this->model_checkout_order->confirm($order['order_id'], 1);
 
 
@@ -126,10 +132,10 @@ class ControllerPaymentPaysera extends Controller {
         $this->load->model('checkout/order');
         $order  = $this->model_checkout_order->getOrder($this->session->data['order_id']);
         $amount = ceil($order['total'] * $this->currency->getvalue($order['currency_code']) * 100);
-print_r($order);
+
         $language  = $this->language->get('code');
         $projectId = $this->config->get('paysera_project');
-echo "| $projectId |";
+
         $methods = WebToPay::getPaymentMethodList($projectId, $order['currency_code'])
             ->filterForAmount($amount, $order['currency_code'])
             ->setDefaultLanguage($language);
@@ -147,33 +153,33 @@ echo "| $projectId |";
     public function cancel() {
         $this->language->load('payment/paysera');
 
-        $this->data['title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_store'));
+        $data['title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_store'));
 
         if(isset($this->request->server['HTTPS']) and $this->request->server['HTTPS'] == 'on') {
-            $this->data['base'] = HTTPS_SERVER;
+            $data['base'] = HTTPS_SERVER;
         } else {
-            $this->data['base'] = HTTP_SERVER;
+            $data['base'] = HTTP_SERVER;
         }
 
-        $this->data['charset']   = $this->language->get('charset');
-        $this->data['language']  = $this->language->get('code');
-        $this->data['direction'] = $this->language->get('direction');
+        $data['charset']   = $this->language->get('charset');
+        $data['language']  = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');
 
-        $this->data['heading_title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_store'));
+        $data['heading_title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_store'));
 
-        $this->data['text_response']     = $this->language->get('text_response');
-        $this->data['text_success']      = $this->language->get('text_success');
-        $this->data['text_success_wait'] = sprintf($this->language->get('text_success_wait'), $this->data['base'] . 'index.php?route=checkout/success');
-        $this->data['text_failure']      = $this->language->get('text_failure');
-        $this->data['text_failure_wait'] = sprintf($this->language->get('text_failure_wait'), $this->data['base'] . 'index.php?route=checkout/cart');
+        $data['text_response']     = $this->language->get('text_response');
+        $data['text_success']      = $this->language->get('text_success');
+        $data['text_success_wait'] = sprintf($this->language->get('text_success_wait'), $this->data['base'] . 'index.php?route=checkout/success');
+        $data['text_failure']      = $this->language->get('text_failure');
+        $data['text_failure_wait'] = sprintf($this->language->get('text_failure_wait'), $this->data['base'] . 'index.php?route=checkout/cart');
 
-        $this->data['button_continue'] = $this->language->get('button_continue');
+        $data['button_continue'] = $this->language->get('button_continue');
 
-        $this->data['continue'] = $this->data['base'] . 'index.php?route=checkout/cart';
+        $data['continue'] = $data['base'] . 'index.php?route=checkout/cart';
 
         $this->template = $this->config->get('config_template') . '/template/payment/paysera_failure.tpl';
 
-        $this->response->setOutput($this->render());
+	    $this->response->setOutput($this->load->view('default/template/payment/paysera_failure.tpl', $data));
     }
 
     public function callback() {
@@ -207,7 +213,8 @@ echo "| $projectId |";
 
                 $message = '';
 
-                $this->model_checkout_order->addOrderHistory($orderId, $this->config->get('config_order_status_id'));
+
+                $this->model_checkout_order->addOrderHistory($orderId, $this->config->get('paysera_order_status_id'));
                 //$this->model_checkout_order->update($orderId, $this->config->get('paysera_order_status_id'), $message, FALSE);
 
                 exit('OK');

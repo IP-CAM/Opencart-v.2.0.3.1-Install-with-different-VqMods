@@ -2,7 +2,7 @@
 // Elektroninių parduotuvių kūrimas: www.el-parduotuve.lt
 // Text
 $_['text_search']       = 'Paieška';
-$_['text_brand']        = 'Gramintojas';
+$_['text_brand']        = 'Gamintojas';
 $_['text_manufacturer'] = 'Gamintojas:';
 $_['text_model']        = 'Prekės kodas:';
 $_['text_reward']       = 'Lojalumo taškai:'; 

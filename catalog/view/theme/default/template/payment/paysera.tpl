@@ -47,8 +47,8 @@
             <tr>
                 <td><?php
                  if($payment_country){
-
                     $country_iso = strtolower($payment_country);
+
                     $countries = $evp_countries;
                     if(!isset($countries[$country_iso])){
                    $country_iso = $default_country; }
@@ -109,7 +109,20 @@
 </div>
 <div class="buttons">
     <div class="pull-right">
-                <button onclick="$('#wtp-checkout').submit();" class="btn btn-primary" style="text-indent: 0px;"><?php echo $button_confirm; ?></button>
+                <button id="button-confirm" class="btn btn-primary" style="text-indent: 0px;"><?php echo $button_confirm; ?></button>
 
     </div>
+
+
+<script type="text/javascript"><!--
+$('.confirm-button').on('click', function() {
+	$('#wtp-checkout').submit();
+});
+$('#button-confirm').on('click', function() {
+	$('#wtp-checkout').submit();
+});
+//--></script>
+
+
+
 </div>

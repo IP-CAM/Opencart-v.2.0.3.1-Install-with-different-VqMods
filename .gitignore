@@ -19,3 +19,4 @@
 # Modification Files
 /system/modification/*
 !/system/modification/index.html
+vqmod/vqcache/*

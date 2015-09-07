@@ -1,8 +1,8 @@
 <?php
 require_once( DIR_SYSTEM.'library/vendor/webtopay/libwebtopay/WebToPay.php' );
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
+ini_set('display_errors', 0);
 
 class ControllerPaymentPaysera extends Controller {
 	private $error = array();
@@ -38,6 +38,7 @@ class ControllerPaymentPaysera extends Controller {
         $data['entry_lang'] = $this->language->get('entry_lang');
         $data['help_lang'] = $this->language->get('help_lang');
 		$data['entry_test'] = $this->language->get('entry_test');
+		$data['entry_new_order_status'] = $this->language->get('entry_new_order_status');
 		$data['entry_order_status'] = $this->language->get('entry_order_status');
 		$data['entry_geo_zone'] = $this->language->get('entry_geo_zone');
 		$data['entry_status'] = $this->language->get('entry_status');
@@ -108,8 +109,6 @@ class ControllerPaymentPaysera extends Controller {
 			$data['paysera_lang'] = $this->config->get('paysera_lang');
 		}
 
-
-
 		$data['callback'] = HTTP_CATALOG . 'index.php?route=payment/paysera/callback';
 
 		if (isset($this->request->post['paysera_test'])) {
@@ -122,6 +121,12 @@ class ControllerPaymentPaysera extends Controller {
 			$data['paysera_order_status_id'] = $this->request->post['paysera_order_status_id'];
 		} else {
 			$data['paysera_order_status_id'] = $this->config->get('paysera_order_status_id');
+		}
+
+		if (isset($this->request->post['paysera_new_order_status_id'])) {
+			$data['paysera_new_order_status_id'] = $this->request->post['paysera_new_order_status_id'];
+		} else {
+			$data['paysera_new_order_status_id'] = $this->config->get('paysera_new_order_status_id');
 		}
 
 	    if (isset($this->request->post['paysera_display_payments_list'])) {
