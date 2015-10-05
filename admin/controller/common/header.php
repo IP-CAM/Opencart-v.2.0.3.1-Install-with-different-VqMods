@@ -132,8 +132,6 @@ class ControllerCommonHeader extends Controller {
 				);
 			}
 		}
- $data['lang'] = $this->config->get('pim_language');
-	       // var_dump($data);
 		return $this->load->view('common/header.tpl', $data);
 	}
 }

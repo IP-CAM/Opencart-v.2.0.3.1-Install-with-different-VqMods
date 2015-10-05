@@ -98,11 +98,4 @@
     </div>
   </div>
 </div>
-<script type="text/javascript"><!--
-<?php foreach ($languages as $language) { ?>
-$('#input-bank<?php echo $language['language_id']; ?>').summernote({
-  height: 300
-});
-<?php } ?>
-//--></script>
 <?php echo $footer; ?>

@@ -1,15 +1,6 @@
 <?php
 class ControllerCatalogProduct extends Controller {
 	private $error = array();
-	// multi image uploader
-	public function pimage() {
-		$this->load->model('tool/image');
-
-		if (isset($this->request->get['image'])) {
-			$this->response->setOutput($this->model_tool_image->resize(html_entity_decode($this->request->get['image'], ENT_QUOTES, 'UTF-8'), 100, 100));
-		}
-	}
-	// multi image uploader	
 
 	public function index() {
 		$this->load->language('catalog/product');
@@ -575,10 +566,6 @@ class ControllerCatalogProduct extends Controller {
 	}
 
 	protected function getForm() {
-		 $data['pim_miu'] = false;
-          $data['pim_status'] = false;
-          $data['pim_miu']  = $this->config->get('pim_miu');
-          $data['pim_status'] = $this->config->get('pim_status');
 		
 		$data['heading_title'] = $this->language->get('heading_title');
 

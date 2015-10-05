@@ -20,17 +20,7 @@
 <script src="view/javascript/jquery/datetimepicker/moment.js" type="text/javascript"></script>
 <script src="view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.js" type="text/javascript"></script>
 <link href="view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.css" type="text/css" rel="stylesheet" media="screen" />
-<link type="text/css" href="view/stylesheet/stylesheet.css" rel="stylesheet" media="screen" />
-<!-- Power Image Manager -->
-          <link rel="stylesheet" href="view/javascript/jquery/jquery-ui-1.11.2.custom/jquery-ui.css" />
-          <script src="view/javascript/jquery/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
-          <script type="text/javascript" src="view/javascript/pim/pim.min.js"></script>          
-          <link rel="stylesheet" type="text/css" media="screen" href="view/stylesheet/pim/pim.min.css">
-          <link rel="stylesheet" type="text/css" media="screen" href="view/stylesheet/pim/theme.css">
-            <?php if ($lang) { ?>
-             <script type="text/javascript" src="view/javascript/pim/i18n/<?php echo $lang;?>.js"></script>  
-            <?php } ?>          
-          <!-- Power Image Manager -->       
+<link type="text/css" href="view/stylesheet/stylesheet.css" rel="stylesheet" media="screen" />     
 <?php foreach ($styles as $style) { ?>
 <link type="text/css" href="<?php echo $style['href']; ?>" rel="<?php echo $style['rel']; ?>" media="<?php echo $style['media']; ?>" />
 <?php } ?>
