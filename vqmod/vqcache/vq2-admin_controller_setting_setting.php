@@ -1447,9 +1447,11 @@ $data['config_meta_keyword'] =array();
 		}
 
 		if (!$this->request->post['config_error_filename']) {
-			$this->error['error_error_filename'] = $this->language->get('error_error_filename');
-			} else {
-			$this->request->post['config_error_filename'] = str_replace(array('../', '..\\', '..'), '', $this->request->post['config_error_filename']);
+			$this->error['error_filename'] = $this->language->get('error_error_filename');
+		} else {
+			if (preg_match('/\.\.[\/\\\]?/', $this->request->post['config_error_filename'])) {
+				$this->error['error_filename'] = $this->language->get('error_malformed_filename');
+			}
 		}
 
 		if (!$this->request->post['config_product_limit']) {

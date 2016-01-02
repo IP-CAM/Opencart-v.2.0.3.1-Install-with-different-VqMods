@@ -30,7 +30,7 @@ $_['entry_paysera_code']  = 'Paysera nuosavybės patikrinimo ir Paysera kokybės
 $_['help_callback']      = '';
 
 // Error
-$_['error_permission']   = 'Persp4jimas: Jūs neturite teisių modifikuoti šio modulio!';
+$_['error_permission']   = 'Perspėjimas: Jūs neturite teisių modifikuoti šio modulio!';
 $_['error_project']      = 'Būtina įvesti Projekto ID!';
 $_['error_sign']     	 = 'Būtinas slaptažodis!';
 $_['error_lang']     	 = 'Įveskite klbos kodą!';

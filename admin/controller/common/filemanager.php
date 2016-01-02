@@ -327,52 +327,7 @@ class ControllerCommonFileManager extends Controller {
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
-// Power Image Manager
-    public function connector() {
-      include_once DIR_SYSTEM.'library/filemanager/elFinderConnector.class.php';
-      include_once DIR_SYSTEM.'library/filemanager/elFinder.class.php';
-      include_once DIR_SYSTEM.'library/filemanager/elFinderVolumeDriver.class.php';
-      include_once DIR_SYSTEM.'library/filemanager/elFinderVolumeLocalFileSystem.class.php';
-
-      if (isset($this->request->server['HTTPS']) && (($this->request->server['HTTPS'] == 'on') || ($this->request->server['HTTPS'] == '1'))) {
-  			$base = HTTPS_CATALOG."image/";
-  		} else {
-  			$base = HTTP_CATALOG."image/";
-  		}    
-    
-       $this->config->set('config_error_display', 0);       
-       $this->config->set('config_error_log', 0);
-        function access($attr, $path, $data, $volume) {
-        	return strpos(basename($path), '.') === 0       // if file/folder begins with '.' (dot)
-        		? !($attr == 'read' || $attr == 'write')    // set read+write to false, other (locked+hidden) set to true
-        		:  null;                                    // else elFinder decide it itself
-        }
-        $tmbURL = DIR_IMAGE.'tmb/';
-
-        $opts = array(
-        	'roots' => array(
-        		array(
-        			'driver'        => 'LocalFileSystem',   // driver for accessing file system (REQUIRED)
-        			'path'          => DIR_IMAGE.'catalog',         // path to files (REQUIRED)
-        			'URL'           => $base.'catalog', // URL to files (REQUIRED)
-        			'tmbURL'       => $tmbPath,
-        			'accessControl' => 'access',             // disable and hide dot starting files (OPTIONAL)
-              'fileMode'     => 0777,         // new files mode
-              'dirMode'      => 0777,         // new folders mode        			
-        			'tmbBgColor'    => 'transparent',
-        			'tmbCrop'       => 'false', 
-        			'tmbSize'       => '59',
-        			'copyOverwrite' => $this->config->get('pim_copyOverwrite'),
-        			'uploadOverwrite' => $this->config->get('pim_uploadOverwrite'),
-        			'uploadMaxSize'  => ''.$this->config->get('pim_uploadMaxSize').''.$this->config->get('pim_uploadMaxType'),      			
-        		)
-        	),                     
-        );
-         
-        $connector = new elFinderConnector(new elFinder($opts));
-        $connector->run();
-    }  	
-	// Power Image Manager        
+      
 	public function delete() {
 		$this->load->language('common/filemanager');
 
