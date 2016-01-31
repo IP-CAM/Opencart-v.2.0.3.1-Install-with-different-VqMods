@@ -46,4 +46,10 @@
 				<?php echo $google_adwords; ?>
 				<?php echo $google_paysera_zenklas; ?>
 			
-</body></html>
+
+<?php if( $maintenance ) { ?>
+<style type="text/css">
+body { background-image:url(catalog/view/theme/default/image/maintenance-Lt.png); background-position:center; background-repeat:no-repeat; background-size:100%; background-attachment:fixed; }
+</style>				
+<?php } ?>
+			</html>

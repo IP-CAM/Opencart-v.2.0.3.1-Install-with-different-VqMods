@@ -1,10 +1,40 @@
 <modification>
-    <id>Shipping Image And Instruction Enabler</id>
-    <version>1.0.1</version>
+    <id>OpenCart Addons - Advanced Shipping PRO - Shipping Image And Instruction Enabler</id>
+    <version>1.0.3</version>
     <vqmver>2.5.0</vqmver>
+    <author>OpenCart Addons - http://opencartaddons.com/contact</author>
 	
-	<file name="catalog/view/theme/*/template/checkout/shipping_method.tpl">		
-		<!--OpenCart v2.x--> 
+	<file name="admin/controller/shipping/ocaaspro.php">
+		<operation>
+			<search position="replace"><![CDATA[private $statusImage		= false;]]></search>
+            <add><![CDATA[private $statusImage		= true;]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[private $statusInstruction	= false;]]></search>
+            <add><![CDATA[private $statusInstruction	= true;]]></add>
+		</operation>
+    </file>
+	
+	<file name="catalog/view/theme/*/template/checkout/shipping_method.tpl">
+		<!--OpenCart v1.5.x-->
+		<operation error="skip">
+			<search position="replace"><![CDATA[<td colspan="3"><b><?php echo $shipping_method['title']; ?></b></td>]]></search>
+            <add><![CDATA[<td colspan="4"><b><?php echo $shipping_method['title']; ?></b></td>]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[<td><label for="<?php echo $quote['code']; ?>"><?php echo $quote['title']; ?></label></td>]]></search>
+            <add><![CDATA[<td><?php if (isset($quote['image']) && $quote['image']) { ?><label for="<?php echo $quote['code']; ?>"><img src="<?php echo $quote['image']; ?>" alt="<?php echo $quote['title']; ?>" title="<?php echo $quote['title']; ?>" class="img-thumbnail" /></label><?php } ?></td>]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[<td><label for="<?php echo $quote['code']; ?>"><?php echo $quote['title']; ?></label></td>]]></search>
+            <add><![CDATA[<td><label for="<?php echo $quote['code']; ?>"><?php echo $quote['title']; ?><?php if (isset($quote['instruction']) && $quote['instruction']) { ?><br /><?php echo $quote['instruction']; ?><?php } ?></label></td>]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[<td colspan="3"><div class="error"><?php echo $shipping_method['error']; ?></div></td>]]></search>
+            <add><![CDATA[<td colspan="4"><div class="error"><?php echo $shipping_method['error']; ?></div></td>]]></add>
+		</operation>
+		
+		<!--OpenCart v2.x-->
 		<operation error="skip">
 			<search position="before"><![CDATA[<?php echo $quote['title']; ?> - <?php echo $quote['text']; ?></label>]]></search>
             <add><![CDATA[<?php if (isset($quote['image']) && $quote['image']) { ?><img src="<?php echo $quote['image']; ?>" alt="<?php echo $quote['title']; ?>" title="<?php echo $quote['title']; ?>" class="img-thumbnail" /><?php } ?>]]></add>
@@ -14,8 +44,41 @@
             <add><![CDATA[<?php echo $quote['title']; ?> - <?php echo $quote['text']; ?><?php if (isset($quote['instruction']) && $quote['instruction']) { ?><br /><?php echo $quote['instruction']; ?><?php } ?></label>]]></add>
 		</operation>
     </file>
-	<!--OpenCart v2.x-->
+	
+	<!--OpenCart v1.5.x-->
+	<file name="catalog/view/theme/*/template/checkout/cart.tpl">
+		<operation error="skip">
+			<search position="replace"><![CDATA[html += '  <td colspan="3"><b>' + json['shipping_method'][i]['title'] + '</b></td>';]]></search>
+            <add><![CDATA[html += '  <td colspan="4"><b>' + json['shipping_method'][i]['title'] + '</b></td>';]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[html += '  <td><label for="' + json['shipping_method'][i]['quote'][j]['code'] + '">' + json['shipping_method'][i]['quote'][j]['title'] + '</label></td>';]]></search>
+            <add><![CDATA[html+= '<td>'; if (json['shipping_method'][i]['quote'][j]['image']) { html += '<label for="' + json['shipping_method'][i]['quote'][j]['code'] + '"><img src="' + json['shipping_method'][i]['quote'][j]['image'] + '" alt="' + json['shipping_method'][i]['quote'][j]['title'] + '" title="' + json['shipping_method'][i]['quote'][j]['title'] + '" class="img-thumbnail" /></label>'; } html += '</td>';]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[html += '  <td><label for="' + json['shipping_method'][i]['quote'][j]['code'] + '">' + json['shipping_method'][i]['quote'][j]['title'] + '</label></td>';]]></search>
+            <add><![CDATA[html += '<td><label for="' + json['shipping_method'][i]['quote'][j]['code'] + '">' + json['shipping_method'][i]['quote'][j]['title']; if (json['shipping_method'][i]['quote'][j]['instruction']) { html += '<br />' + json['shipping_method'][i]['quote'][j]['instruction']; } html += '</label></td>';]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[html += '  <td colspan="3"><div class="error">' + json['shipping_method'][i]['error'] + '</div></td>';]]></search>
+            <add><![CDATA[html += '  <td colspan="4"><div class="error">' + json['shipping_method'][i]['error'] + '</div></td>';]]></add>
+		</operation>
+    </file>
+	
+	<!--OpenCart v2.0-->
 	<file name="catalog/view/theme/*/template/checkout/shipping.tpl" error="skip">
+		<operation error="skip">
+			<search position="before"><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text'] + '</label></div>';]]></search>
+            <add><![CDATA[if (json['shipping_method'][i]['quote'][j]['image']) { html += '<img src="' + json['shipping_method'][i]['quote'][j]['image'] + '" alt="' + json['shipping_method'][i]['quote'][j]['title'] + '" title="' + json['shipping_method'][i]['quote'][j]['title'] + '" class="img-thumbnail" />'; }]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text'] + '</label></div>';]]></search>
+            <add><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text']; if (json['shipping_method'][i]['quote'][j]['instruction']) { html += '<br />' + json['shipping_method'][i]['quote'][j]['instruction']; } html += '</label></div>';]]></add>
+		</operation>
+    </file>
+	
+	<!--OpenCart v2.1-->
+	<file name="catalog/view/theme/*/template/total/shipping.tpl" error="skip">
 		<operation error="skip">
 			<search position="before"><![CDATA[html += json['shipping_method'][i]['quote'][j]['title'] + ' - ' + json['shipping_method'][i]['quote'][j]['text'] + '</label></div>';]]></search>
             <add><![CDATA[if (json['shipping_method'][i]['quote'][j]['image']) { html += '<img src="' + json['shipping_method'][i]['quote'][j]['image'] + '" alt="' + json['shipping_method'][i]['quote'][j]['title'] + '" title="' + json['shipping_method'][i]['quote'][j]['title'] + '" class="img-thumbnail" />'; }]]></add>

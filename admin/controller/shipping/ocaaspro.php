@@ -1,31 +1,44 @@
 <?php
-//==//
+//==============================================//
+// Product:	Advanced Shipping PRO              	//
+// Author: 	Joel Reeds                        	//
+// Company: OpenCart Addons                  	//
+// Website: http://opencartaddons.com        	//
+// Contact: http://opencartaddons.com/contact  	//
+//==============================================//
+
 class ControllerShippingOCAASPRO extends Controller { 
 	private $error 						= array();
-	private $version 					= '4.4.1';
+	private $version 					= '6.0.5';
 	private $extension 					= 'ocaaspro';
 	private $type 						= 'shipping';
 	private $db_table					= 'advanced_shipping_pro';
-	private $email						= 'NIL';
-	private $href_oca					= '';
-	private $href_oc					= '';
-	private $href_med					= '';
-	private $href_facebook				= '';
-	private $href_twitter				= '';
+	private $email						= 'contact@#.com';
+	private $href_oca					= 'http://#';
+	private $href_oc					= 'http://#';
+	private $href_med					= 'http://#';
+	private $href_facebook				= 'https://www.facebook.com/#';
+	private $href_twitter				= 'https://twitter.com/#';
 		
 	public function index() { 
-		$this->checkInstall();
+		$this->load->model('oca/' . $this->extension);
 		
-		$update = $this->checkUpdates();
+		$update = $this->{'model_oca_' . $this->extension}->update();
 		if ($update['status']) {
 			$this->session->data['success'] = $update['log'];
+			if ($this->version() >= 200) {
+				$this->response->redirect($this->link($this->type, $this->extension));
+			} else {
+				$this->redirect($this->link($this->type, $this->extension));
+			}
 		}
 		
-		$this->load->model('oca/' . $this->extension);
 		$this->load->model('localisation/language');	
 		
 		$data = array();
 		$data = array_merge($data, $this->load->language($this->type . '/' . $this->extension));
+		
+		$this->buildRequirements();
 		
 		$data['mijoshop'] 	= false;
 		$data['aceshop'] 	= false;
@@ -82,10 +95,11 @@ class ControllerShippingOCAASPRO extends Controller {
 		
 		$data['img_logo'] 		= $this->img_logo;
 		$data['icon_logo'] 		= $this->icon_logo;
+		$data['icon_name'] 		= $this->icon_name;
 		
 		$data['extension'] 		= $this->extension;
-		$data['extensionType'] 	= $this->type;
-		$data['version'] 		= $this->getVersion();
+		$data['type'] 			= $this->type;
+		$data['version'] 		= $this->version();
 			
 		$data['text_footer'] 	= sprintf($data['text_footer'], $this->version);
 		
@@ -97,16 +111,34 @@ class ControllerShippingOCAASPRO extends Controller {
 		
 		$data['demo'] 			= (isset($this->request->server['HTTP_HOST']) && $this->request->server['HTTP_HOST'] == 'demo.opencartaddons.com') ? $this->href_oca : false;
 		
-		$data['debug_download']	= $this->getLink($this->type, $this->extension . '/downloadDebug&format=raw');
-		$data['debug_clear']	= $this->getLink($this->type, $this->extension . '/clearDebug&format=raw');
+		$data['debug_download']		= $this->link($this->type, $this->extension . '/downloadDebug&format=raw');
+		$data['debug_clear']		= $this->link($this->type, $this->extension . '/clearDebug&format=raw');
+		$data['debug_reload']		= $this->link($this->type, $this->extension . '/reloadDebug&format=raw');
+		$data['debug_log'] 			= '';
 		
-		$data['rate_import']	= $this->getLink($this->type, $this->extension);
-		$data['rate_export']	= $this->getLink($this->type, $this->extension . '/exportRates&format=raw');
+		$debug_file = DIR_LOGS . $this->extension . '.txt';
+		if (file_exists($debug_file)) {
+			$debug_file_size = filesize($debug_file);
+			if ($debug_file_size >= 5242880) {
+				$suffix = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+				$i = 0;
+				while (($debug_file_size / 1024) > 1) {
+					$debug_file_size = $debug_file_size / 1024;
+					$i++;
+				}
+				$data['error_warning'] = sprintf($this->language->get('debug_error_warning'), basename($debug_file), round(substr($debug_file_size, 0, strpos($debug_file_size, '.') + 4), 2) . $suffix[$i]);
+			} else {
+				$data['debug_log'] = file_get_contents($debug_file, FILE_USE_INCLUDE_PATH, null);
+			}
+		}
+		
+		$data['rate_import']	= $this->link($this->type, $this->extension);
+		$data['rate_export']	= $this->link($this->type, $this->extension . '/export&format=raw');
 		
 		if (isset($this->request->files[$this->extension . '_import']) && is_uploaded_file($this->request->files[$this->extension . '_import']['tmp_name'])) {
-			$this->importRates($this->request->files[$this->extension . '_import']['tmp_name']);
+			$this->import($this->request->files[$this->extension . '_import']['tmp_name']);
 		} elseif (isset($this->request->post[$this->extension . '_export'])) {
-			$this->exportRates();
+			$this->export();
 		}
 		
 		$data['success']		= isset($this->session->data['success']) ? $this->session->data['success'] : '';
@@ -116,35 +148,18 @@ class ControllerShippingOCAASPRO extends Controller {
 		unset($this->session->data['success']);
 		unset($this->session->data['rate_errors']);
 		
-  		$breadcrumbs = array();
-   		$breadcrumbs[] = array(
-       		'text'      => $this->language->get('text_home'),
-			'href'      => $this->getLink('common', 'home'),
-      		'separator' => false
-   		);
-   		$breadcrumbs[] = array(
-       		'text'      => $this->language->get('text_' . $this->type),
-			'href'      => $this->getLink('extension', $this->type),
-      		'separator' => '::'
-   		);		
-   		$breadcrumbs[] = array(
-       		'text'      => $this->language->get('text_name'),
-			'href'      => $this->getLink($this->type, $this->extension),
-      		'separator' => "::"
-   		);
-		
-		$fields = array('status', 'title', 'sort_order', 'sort_quotes', 'title_display', 'display_value', 'debug');
+  		$fields = array('status', 'title', 'sort_order', 'ocapps_status', 'sort_quotes', 'title_display', 'display_value', 'debug', 'tooltip');
 		foreach ($fields as $field) {
 			$key = $this->extension . '_' . $field;
 			$value = isset($this->request->post[$key]) ? $this->request->post[$key] : $this->config->get($key);
 			if ($value) {
-				$data[$key] = $this->getField($value);
+				$data[$key] = $this->value($value);
 			} else {
 				$data[$key] = '';
 			}
 		}
 		
-		$options = array('sort_quotes', 'title_displays');
+		$options = array('sort_quote', 'title_display', 'calculation_method');
 		foreach ($options as $option) {
 			$x = 0;
 			$data[$option] = array();
@@ -156,9 +171,26 @@ class ControllerShippingOCAASPRO extends Controller {
 				$x++;
 			}
 		}
-
+		
+		$data['combinations'] = array();
+		$combinations = isset($this->request->post[$this->extension . '_combinations']) ? $this->request->post[$this->extension . '_combinations'] : $this->config->get($this->extension . '_combinations');
+		if ($combinations) {
+			foreach ($this->value($combinations) as $key => $value) {
+				$data['combinations'][$key] = array(
+					'key'					=> $key,
+					'rate_group'			=> $value['rate_group'],
+					'calculation_method'	=> $value['calculation_method'],
+				);
+			}
+		}
+		
+		$data['requirement_types']	= $this->requirement_settings['types'];
+		$data['operations']			= $this->requirement_settings['operations'];
+		$data['values']				= $this->requirement_settings['values'];
+		$data['parameters']			= $this->requirement_settings['parameters'];
+		
 		$data['rates']	= array();
-		$rates			= $this->model_oca_ocaaspro->getRates();
+		$rates			= $this->{'model_oca_' . $this->extension}->getRates();
 		if ($rates) {
 			foreach ($rates as $rate) {
 				$data['rates'][] = array(
@@ -171,12 +203,13 @@ class ControllerShippingOCAASPRO extends Controller {
 		$data['languages'] 	= $this->model_localisation_language->getLanguages();
 		
 		$data['token']  	= $this->session->data['token'];
-		$data['action'] 	= $this->getLink($this->type, $this->extension);
-		$data['cancel'] 	= $this->getLink('extension', $this->type);
-
-		if ($this->getVersion() >= 200) {
+		$data['action'] 	= $this->link($this->type, $this->extension);
+		$data['cancel'] 	= $this->link('extension', $this->type);
+		
+		$data['ocapps_status'] = $this->ocapps_status;
+		
+		if ($this->version() >= 200) {
 			$this->document->setTitle($data['text_name']);
-			$data['breadcrumbs'] 	= $breadcrumbs;
 			$data['header'] 		= $this->load->controller('common/header');
 			$data['column_left'] 	= $this->load->controller('common/column_left');
 			$data['footer'] 		= $this->load->controller('common/footer');
@@ -184,7 +217,6 @@ class ControllerShippingOCAASPRO extends Controller {
 		} else {
 			$this->data = array_merge($this->data, $data);
 			$this->document->setTitle($this->data['text_name']);
-			$this->data['breadcrumbs'] 	= $breadcrumbs;
 			$this->template 			= $this->type . '/' . $this->extension . '.tpl';
 			$this->children 			= array(
 				'common/header',
@@ -194,280 +226,202 @@ class ControllerShippingOCAASPRO extends Controller {
 		}
 	}
 	
-	private function getVersion() {
-		if (defined('VERSION') && VERSION < 1.5) {
-			$oc = 140;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.0') === 0) {
-			$oc = 150;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.1') === 0) {
-			$oc = 151;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.2') === 0) {
-			$oc = 152;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.3') === 0) {
-			$oc = 153;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.4') === 0) {
-			$oc = 154;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.5') === 0) {
-			$oc = 155;
-		} elseif (defined('VERSION') && strpos(VERSION, '1.5.6') === 0) {
-			$oc = 156;
+	private function buildRequirements() {
+		$data = array();
+		$data = array_merge($data, $this->load->language($this->type . '/' . $this->extension));
+		
+		//Adjust Text Values
+		foreach (array('volume', 'length', 'width', 'height') as $param) {
+			foreach (array('cart', 'product') as $type) {
+				$data['text_requirement_type_' . $type . '_' . $param] = sprintf($data['text_requirement_type_' . $type . '_' . $param], $this->length());
+			}
+		}
+		
+		$data['text_requirement_type_cart_weight'] 		= sprintf($data['text_requirement_type_cart_weight'], $this->weight());
+		$data['text_requirement_type_cart_dim_weight'] 	= sprintf($data['text_requirement_type_cart_dim_weight'], $this->weight());
+		$data['text_requirement_type_product_weight'] 	= sprintf($data['text_requirement_type_product_weight'], $this->weight());
+		
+		foreach (array('total') as $param) {
+			foreach (array('cart', 'product') as $type) {
+				$data['text_requirement_type_' . $type . '_' . $param] = sprintf($data['text_requirement_type_' . $type . '_' . $param], $this->currency($this->config->get('currency')));
+			}
+		}
+		
+		//Requirements
+		$data['requirement_types'] 		= array();
+		$requirement_types['cart'] 		= array('quantity', 'total', 'weight', 'volume', 'distance', 'length', 'width', 'height');
+		$requirement_types['product'] 	= array('quantity', 'total', 'weight', 'volume', 'length', 'width', 'height', 'name', 'model', 'sku', 'upc', 'ean', 'jan' ,'isbn', 'mpn', 'location', 'stock', 'category', 'manufacturer');
+		$requirement_types['customer'] 	= array('name', 'email', 'telephone', 'fax', 'company', 'address', 'city', 'postcode');
+		$requirement_types['other']		= array('currency', 'day', 'date', 'time');
+		foreach ($requirement_types as $group => $types) {
+			foreach ($types as $type) {
+				$data['requirement_types'][$group][] = array(
+					'id'	=> ($group == 'other' ? '' : $group . '_') . $type,
+					'name'	=> $data['text_requirement_type_' . ($group == 'other' ? '' : $group . '_') . $type],
+				);
+			}
+		}
+		
+		//Operations
+		$data['operations'] = array();
+		
+		//Operations Set - Equal, Not Equal
+		$params = array('product_category', 'product_manufacturer', 'customer_postcode', 'currency', 'day');
+		foreach ($params as $param) {
+			$data['operations'][$param] = array();
+			$operators = array('eq', 'neq');
+			foreach ($operators as $operator) {
+				$data['operations'][$param][] = array(
+					'id'	=> $operator,
+					'name'	=> $data['text_operator_' . $operator],
+				);
+			}
+		}
+		
+		//Operations Set - Equal, Not Equal, Contains, Does Not Contain
+		$params = array('product_name', 'product_model', 'product_sku', 'product_upc', 'product_ean', 'product_jan', 'product_isbn', 'product_mpn', 'product_location', 'customer_name', 'customer_email', 'customer_telephone', 'customer_fax', 'customer_company', 'customer_address', 'customer_city');
+		foreach ($params as $param) {
+			$data['operations'][$param] = array();
+			$operators = array('eq', 'neq', 'strpos', 'nstrpos');
+			foreach ($operators as $operator) {
+				$data['operations'][$param][] = array(
+					'id'	=> $operator,
+					'name'	=> $data['text_operator_' . $operator],
+				);
+			}
+		}
+		
+		//Operations Set - Equal, Not Equal, Greater Than or Equal, Less Than or Equal, Add, Subtract
+		$params = array('cart_quantity', 'cart_total', 'cart_weight', 'cart_volume', 'cart_dim_weight', 'cart_distance', 'product_quantity', 'product_total', 'product_weight', 'product_volume');
+		foreach ($params as $param) {
+			$data['operations'][$param] = array();
+			$operators = array('eq', 'neq', 'gte', 'lte', 'add', 'sub');
+			foreach ($operators as $operator) {
+				$data['operations'][$param][] = array(
+					'id'	=> $operator,
+					'name'	=> $data['text_operator_' . $operator],
+				);
+			}
+		}
+		
+		//Operations Set - Equal, Not Equal, Greater Than or Equal, Less Than or Equal
+		$params = array('cart_length', 'cart_width', 'cart_height', 'product_length', 'product_width', 'product_height', 'product_stock', 'date', 'time');
+		foreach ($params as $param) {
+			$data['operations'][$param] = array();
+			$operators = array('eq', 'neq', 'gte', 'lte');
+			foreach ($operators as $operator) {
+				$data['operations'][$param][] = array(
+					'id'	=> $operator,
+					'name'	=> $data['text_operator_' . $operator],
+				);
+			}
+		}
+		
+		//Values
+		$data['values'] = array();
+		
+		//Categories
+		$this->load->model('catalog/category');
+		foreach ($this->model_catalog_category->getCategories(0) as $category) {
+			$data['values']['product_category'][] = array(
+				'id'	=> $category['category_id'],
+				'name'	=> $category['name'],
+			);
+		}
+		
+		//Manufacturers
+		$this->load->model('catalog/manufacturer');
+		foreach ($this->model_catalog_manufacturer->getManufacturers() as $manufacturer) {
+			$data['values']['product_manufacturer'][] = array(
+				'id'	=> $manufacturer['manufacturer_id'],
+				'name'	=> $manufacturer['name'],
+			);
+		}
+		
+		//Currencies
+		$this->load->model('localisation/currency');
+		foreach ($this->model_localisation_currency->getCurrencies() as $currency) {
+			$data['values']['currency'][] = array(
+				'id'	=> $currency['code'],
+				'name'	=> $currency['title'],
+			);
+		}			
+		
+		//Days Of Week
+		$day = 1;
+		while ($day <= 7) {
+			$data['values']['day'][] = array(
+				'id'	=> $day,
+				'name'	=> $data['day_' . $day],
+			);
+			$day++;
+		}
+		
+		//Parameters
+		$data['parameters'] = array();
+		
+		//Product Parameters
+		foreach ($requirement_types['product'] as $param) {
+			foreach (array('any', 'all', 'none') as $x) {
+				$data['parameters']['product_' . $param]['match'][] = array(
+					'id'	=> $x,
+					'name'	=> $data['text_product_match_' . $x],
+				);
+			}
+		}
+		
+		//Postal Code Types
+		$data['parameters']['customer_postcode']['type'] = array();
+		$data['parameters']['customer_postcode']['type'][] = array(
+			'id'	=> 'other',
+			'name'	=> $data['text_postcode_type_other'],
+		);
+		$data['parameters']['customer_postcode']['type'][] = array(
+			'id'	=> 'uk',
+			'name'	=> $data['text_postcode_type_uk'],
+		);
+		
+		$this->requirement_settings = array('types' => $data['requirement_types'], 'operations' => $data['operations'], 'values' => $data['values'], 'parameters' => $data['parameters']);
+	}
+	
+	private function version() {
+		if (defined('VERSION') && strpos(VERSION, '1.5') === 0) {
+			$version = 150;
 		} elseif (defined('VERSION') && strpos(VERSION, '2.0') === 0) {
-			$oc = 200;
+			$version = 200;
+		} elseif (defined('VERSION') && strpos(VERSION, '2.1') === 0) {
+			$version = 210;
 		} else {
 			$oc = '';
 		}
-		if (defined('VERSION') && VERSION >= 1.5 && !$oc) {
-			$oc = 152;
-		}
 		if (defined('JPATH_MIJOSHOP_ADMIN') && strpos(Mijoshop::get('base')->getMijoshopVersion(), '3.') === 0) {
-			$oc = 200;
+			$version = 200;
 		}
-		return $oc;
+		return $version;
 	}
 	
-	private function getLink($a, $b) {
-		$route = $a . '/' . $b;
-		return $this->url->link($route, 'token=' . $this->session->data['token'], 'SSL');
+	private function link($a, $b) {
+		return $this->url->link($a . '/' . $b, 'token=' . $this->session->data['token'], 'SSL');
 	}
 	
-	private function getField($value) {
-		if (is_string($value) && strpos($value, 'a:') === 0) {
-			$value = unserialize($value);
-		}
-		return $value;
+	private function value($value) {
+		return $value = (!is_array($value) && is_array(json_decode($value, true))) ? json_decode($value, true) : $value;
 	}
 	
 	public function install() {
-		$this->checkInstall();
-		$this->db->query("ALTER TABLE `" . DB_PREFIX . "order` MODIFY COLUMN shipping_method text NOT NULL");
+		$this->load->model('oca/' . $this->extension);
+		$this->{'model_oca_' . $this->extension}->install();
+		
+		$this->load->model('setting/setting');
+		$this->model_setting_setting->editSetting($this->extension, array($this->extension . '_tooltip' => 1));
 	}
 	
 	public function uninstall() {
-		$this->db->query("DROP TABLE " . DB_PREFIX . $this->db_table . "");
+		$this->load->model('oca/' . $this->extension);
+		$this->{'model_oca_' . $this->extension}->uninstall();
 	}
 	
-	public function checkInstall() {
-		$this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . $this->db_table . "` (
-			`rate_id` int(11) NOT NULL AUTO_INCREMENT,
-			`description` text NOT NULL,
-			`status` tinyint(1) NOT NULL DEFAULT 0,
-			`image` text NOT NULL,
-			`image_width` int(3) NOT NULL,
-			`image_height` int(3) NOT NULL,
-			`name` text NOT NULL,
-			`instruction` text NOT NULL,
-			`group` varchar(3) NOT NULL,
-			`multirate` tinyint(1) NOT NULL,
-			`sort_order` int(3) NOT NULL,
-			`tax_class_id` int(11) NOT NULL,
-			`total_type` tinyint(1) NOT NULL,
-			`currency` varchar(10) NOT NULL,
-			`days` text NOT NULL,
-			`time` text NOT NULL,
-			`date` text NOT NULL,
-			`stores` text NOT NULL,
-			`customer_groups` text NOT NULL,
-			`geo_zones` text NOT NULL,
-			`currencies` text NOT NULL,
-			`postcode_type` tinyint(1) NOT NULL,
-			`postcode_method` tinyint(1) NOT NULL,
-			`postcode_ranges` longtext NOT NULL,
-			`cart_quantity` text NOT NULL,
-			`cart_total` text NOT NULL,
-			`cart_weight` text NOT NULL,
-			`cart_volume` text NOT NULL,
-			`cart_distance` text NOT NULL,
-			`cart_length` text NOT NULL,
-			`cart_width` text NOT NULL,
-			`cart_height` text NOT NULL,
-			`product_length` text NOT NULL,
-			`product_width` text NOT NULL,
-			`product_height` text NOT NULL,
-			`category_match` int(11) NOT NULL,
-			`category_cost` int(11) NOT NULL,
-			`categories` text NOT NULL,
-			`rate_type` tinyint(1) NOT NULL,
-			`final_cost` tinyint(1) NOT NULL,
-			`split` tinyint(1) NOT NULL,
-			`shipping_factor` decimal(15,3) NOT NULL,
-			`origin` text NOT NULL,
-			`geocode_lat` decimal(20,8) NOT NULL,
-			`geocode_lng` decimal(20,8) NOT NULL,
-			`rates` text NOT NULL,
-			`cost` text NOT NULL,
-			`freight_fee` varchar(15) NOT NULL,
-			`date_added` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-			`date_modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-			`administrator` varchar(50) NOT NULL,
-			PRIMARY KEY (`rate_id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;");
-	}
-	
-	public function checkUpdates() {
-		$status 		= false;
-		$log 			= 'Success: The following updates have been completed:<br />';
-		$custom_table	= $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . $this->db_table. "`");
-		$custom_columns	= array();
-		foreach ($custom_table->rows as $result) { 
-		  $custom_columns[] = $result['Field']; 
-		}
-		
-		$order_table	= $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "order`");
-		$order_columns	= array();
-		foreach ($order_table->rows as $result) { 
-		  $order_columns[$result['Field']] = $result; 
-		}
-		
-		if ($custom_columns) {
-			//v1.5.0
-			if (!in_array('instruction', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `instruction` TEXT NOT NULL AFTER name");
-				$status	= true;
-				$log   .= '[v1.5.0] Instruction column added<br />';
-			}
-			
-			//v1.7.0
-			if (!in_array('split', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `split` TINYINT(1) NOT NULL AFTER final_cost");
-				$status	= true;
-				$log   .= '[v1.7.0] Split column added<br />';
-			}
-			
-			//v1.9.0
-			if (!in_array('image', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `image` TEXT NOT NULL AFTER status");
-				$status	= true;
-				$log   .= '[v1.9.0] Image column added<br />';
-			}
-			if (in_array('customer_address', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` DROP COLUMN customer_address");
-				$status	= true;
-				$log   .= '[v1.9.0] Customer_Address column removed<br />';
-			}
-			if (in_array('payment_methods', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` DROP COLUMN payment_methods");
-				$status	= true;
-				$log   .= '[v1.9.0] Payment_Methods column removed<br />';
-			}
-			if (in_array('shipping_methods', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` DROP COLUMN shipping_methods");
-				$status	= true;
-				$log   .= '[v1.9.0] Shipping_Methods column removed<br />';
-			}
-			if (in_array('exclusions', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` DROP COLUMN exclusions");
-				$status	= true;
-				$log   .= '[v1.9.0] Exclusions column removed<br />';
-			}
-			
-			//v2.0.0
-			if ($order_columns['shipping_method']['Type'] == 'varchar(128)') {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . "order` MODIFY COLUMN shipping_method TEXT NOT NULL");
-				$status	= true;
-				$log   .= '[v2.0.0] Column shipping_method in table order changed to text<br />';
-			}
-			
-			//v2.2.0
-			if (!in_array('group', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `group` VARCHAR(3) NOT NULL AFTER instruction");
-				$status	= true;
-				$log   .= '[v2.2.0] Group column added<br />';
-			}
-			
-			//v3.0.0
-			if (!in_array('date_added', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `date_added` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER freight_fee");
-				$status	= true;
-				$log   .= '[v3.0.0] Date_Added column added<br />';
-			}
-			if (!in_array('date_modified', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `date_modified` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER date_added");
-				$status	= true;
-				$log   .= '[v3.0.0] Date_Modified column added<br />';
-			}
-			if (!in_array('administrator', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `administrator` VARCHAR(50) NOT NULL AFTER date_modified");
-				$status	= true;
-				$log   .= '[v3.0.0] Date_Modified column added<br />';
-			}
-			
-			//v3.4.0
-			if (!in_array('cart_distance', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `cart_distance` TEXT NOT NULL AFTER cart_volume");
-								
-				$cart_distance_value = array('min'=>'', 'max'=>'', 'add'=>'');
-				$value = serialize($cart_distance_value);
-				$this->db->query("UPDATE `" . DB_PREFIX . $this->db_table . "` SET `cart_distance` = '" . $this->db->escape($value) . "' WHERE 1");
-				
-				$status	= true;
-				$log   .= '[v3.4.0] Cart_Distance column added<br />';
-			}
-			if (!in_array('geocode_lat', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `geocode_lat` DECIMAL(20,8) NOT NULL AFTER shipping_factor");
-				$status	= true;
-				$log   .= '[v3.4.0] GeoCode_Lat column added<br />';
-			}
-			if (!in_array('geocode_lng', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `geocode_lng` DECIMAL(20,8) NOT NULL AFTER geocode_lat");
-				$status	= true;
-				$log   .= '[v3.4.0] GeoCode_Lng column added<br />';
-			}
-			
-			//v3.5.0
-			if (in_array('postal_code', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` DROP COLUMN `postal_code`");
-				$status	= true;
-				$log   .= '[v3.5.0] Postal_Code column removed<br />';
-			} elseif (!in_array('origin', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `origin` TEXT NOT NULL AFTER shipping_factor");
-				$status	= true;
-				$log   .= '[v3.5.0] Origin column added<br />';
-			}
-			if (in_array('geocode_key', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` DROP COLUMN geocode_key");
-				$status	= true;
-				$log   .= '[v3.5.0] GeoCode_Key column removed<br />';
-			}
-			
-			//v4.1.0
-			if (!in_array('image_width', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `image_width` INT(3) NOT NULL AFTER image");
-				$status	= true;
-				$log   .= '[v4.1.0] Image_Width column added<br />';
-			}
-			if (!in_array('image_height', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `image_height` INT(3) NOT NULL AFTER image_width");
-				$status	= true;
-				$log   .= '[v4.1.0] Image_Height column added<br />';
-			}
-			
-			//v4.2.0
-			if (!in_array('currency', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `currency` VARCHAR(15) NOT NULL AFTER total_type");
-				$this->db->query("UPDATE `" . DB_PREFIX . $this->db_table . "` SET `currency` = '" . $this->db->escape($this->config->get('config_currency')) . "' WHERE 1");
-				$status	= true;
-				$log   .= '[v4.2.0] Currency column added<br />';
-				$log   .= '[v4.2.0] All rates set to default currency<br />';
-			}
-			
-			//v4.3.0
-			if (!in_array('currencies', $custom_columns)) {
-				$this->db->query("ALTER TABLE `" . DB_PREFIX . $this->db_table . "` ADD `currencies` TEXT NOT NULL AFTER geo_zones");
-				$this->load->model('localisation/currency');
-				$this->db->query("UPDATE `" . DB_PREFIX . $this->db_table . "` SET `currencies` = '" . $this->db->escape(serialize(array('0'))) . "' WHERE 1");
-				$status	= true;
-				$log   .= '[v4.3.0] Currencies column added<br />';
-				$log   .= '[v4.3.0] All rates populated with All Currencies selected<br />';
-			}
-		}
-		
-		return array(
-			'status'	=> $status,
-			'log'		=> $log
-		);
-	}
-	
-	public function saveGeneralSettings() {
+	public function save() {
 		$json = array();
 		
 		$this->load->language($this->type . '/' . $this->extension);
@@ -477,12 +431,8 @@ class ControllerShippingOCAASPRO extends Controller {
 				$this->load->model('setting/setting');
 				$json = array();
 				$post_data = $this->request->post;
-				if ($this->getVersion() <= 150) {
-					foreach ($post_data as $key => $value) {
-						if (is_array($value)) {
-							$post_data[$key] = serialize($value);
-						}
-					}
+				foreach ($post_data as $key => $value) {
+					$post_data[$key] = $this->value($value);
 				}
 				$this->model_setting_setting->editSetting($this->extension, $post_data);	
 				$json['success'] = $this->language->get('text_success_general_save');
@@ -502,15 +452,15 @@ class ControllerShippingOCAASPRO extends Controller {
 		
 		if ($this->validate()) {
 			$this->load->model('oca/' . $this->extension);
-			$rate_id 	= $this->model_oca_ocaaspro->addRate($this->getDefaultSettings());
-			$rate_info	= $this->model_oca_ocaaspro->getRate($rate_id);
+			$rate_id 	= $this->{'model_oca_' . $this->extension}->addRate($this->settings());
+			$rate_info	= $this->{'model_oca_' . $this->extension}->getRate($rate_id);
 			if ($rate_info) {
 				$data = array();
 				foreach ($rate_info as $key => $value) {
-					$data[$key] = $this->getField($value);
+					$data[$key] = $this->value($value);
 				}
 					
-				$html = $this->getTemplate($rate_id, $data);
+				$html = $this->template($rate_id, $data);
 				if ($html) {
 					$json['success']		= true;
 					$json['rate_id']		= $rate_id;
@@ -537,7 +487,7 @@ class ControllerShippingOCAASPRO extends Controller {
 		$rate_id = isset($this->request->get['rate_id']) ? $this->request->get['rate_id'] : 0;
 		if ($this->validate()) {
 			$this->load->model('oca/' . $this->extension);
-			$this->model_oca_ocaaspro->deleteRate($rate_id);
+			$this->{'model_oca_' . $this->extension}->deleteRate($rate_id);
 			$json['success'] = true;
 		} else {
 			$json['error'] = $this->language->get('error_permission');
@@ -553,7 +503,7 @@ class ControllerShippingOCAASPRO extends Controller {
 		
 		if ($this->validate()) {
 			$this->load->model('oca/' . $this->extension);
-			$this->model_oca_ocaaspro->deleteAllRates();
+			$this->{'model_oca_' . $this->extension}->deleteAllRates();
 			$json['success'] = true;
 		} else {
 			$json['error'] = $this->language->get('error_permission');
@@ -575,13 +525,13 @@ class ControllerShippingOCAASPRO extends Controller {
 				$data = $this->request->post;
 				$rate_errors = $this->validateRate($data);
 				if (!$rate_errors) {
-					if ($data['rate_type'] == 5 && $data['origin']) {
+					if ($data['origin']) {
 						$geocode = $this->getGeoCode($data['origin']);
 						$data['geocode_lat'] = $geocode['lat'];
 						$data['geocode_lng'] = $geocode['lng'];
 					}
 					$this->load->model('oca/' . $this->extension);
-					$this->model_oca_ocaaspro->editRate($rate_id, $data);
+					$this->{'model_oca_' . $this->extension}->editRate($rate_id, $data);
 					$json['success'] 		= true;
 					$json['description']	= substr($data['description'], 0, 100);
 				} else {
@@ -607,15 +557,15 @@ class ControllerShippingOCAASPRO extends Controller {
 		$rate_id = isset($this->request->get['rate_id']) ? $this->request->get['rate_id'] : 0;
 		if ($this->validate()) {
 			$this->load->model('oca/' . $this->extension);
-			$rate_info = $this->model_oca_ocaaspro->copyRate($rate_id);
+			$rate_info = $this->{'model_oca_' . $this->extension}->copyRate($rate_id);
 			
 			if ($rate_info) {
 				$data = array();
 				foreach ($rate_info as $key => $value) {
-					$data[$key] = $this->getField($value);
+					$data[$key] = $this->value($value);
 				}
-					
-				$html = $this->getTemplate($data['rate_id'], $data);
+				
+				$html = $this->template($data['rate_id'], $data);
 				if ($html) {
 					$json['success'] 		= true;
 					$json['rate_id']		= $data['rate_id'];
@@ -641,15 +591,15 @@ class ControllerShippingOCAASPRO extends Controller {
 		
 		$rate_id = isset($this->request->get['rate_id']) ? $this->request->get['rate_id'] : 0;
 		$this->load->model('oca/' . $this->extension);
-		$rate_info = $this->model_oca_ocaaspro->getRate($rate_id);
+		$rate_info = $this->{'model_oca_' . $this->extension}->getRate($rate_id);
 		
 		if ($rate_info) {
 			$data = array();
 			foreach ($rate_info as $key => $value) {
-				$data[$key] = $this->getField($value);
+				$data[$key] = $this->value($value);
 			}
 				
-			$html = $this->getTemplate($rate_id, $data);
+			$html = $this->template($rate_id, $data);
 			if ($html) {
 				$json['success'] 		= true;
 				$json['rate_id']		= $rate_id;
@@ -671,15 +621,15 @@ class ControllerShippingOCAASPRO extends Controller {
 		
 		$rate_id = isset($this->request->get['rate_id']) ? $this->request->get['rate_id'] : 0;
 		$this->load->model('oca/' . $this->extension);
-		$rate_info = $this->model_oca_ocaaspro->getRate($rate_id);
+		$rate_info = $this->{'model_oca_' . $this->extension}->getRate($rate_id);
 		
 		if ($rate_info) {
 			$data = array();
 			foreach ($rate_info as $key => $value) {
-				$data[$key] = $this->getField($value);
+				$data[$key] = $this->value($value);
 			}
 				
-			$html = $this->getTemplate($rate_id, $data);
+			$html = $this->template($rate_id, $data);
 			if ($html) {
 				$json['success'] 		= true;
 				$json['rate_id']		= $rate_id;
@@ -693,23 +643,22 @@ class ControllerShippingOCAASPRO extends Controller {
 		$this->response->setOutput(json_encode($json));	
 	}
 	
-	private function getTemplate($rate_id, $rate_info) {
+	public function template($rate_id, $rate_info) {
 		if ($rate_id && $rate_info) {			
-			$data = array();
+			$this->buildRequirements();
 			
-			$this->load->language($this->type . '/' . $this->extension);
+			$data = array();
 			$data = array_merge($data, $this->load->language($this->type . '/' . $this->extension));
 			
 			$this->load->model('localisation/language');
 			$this->load->model('localisation/tax_class');
 			$this->load->model('localisation/currency');
 			$this->load->model('setting/store');
-			$this->load->model('sale/customer_group');
+			$this->load->model(($this->version() > 200 ? 'customer/customer_group' : 'sale/customer_group'));
 			$this->load->model('localisation/geo_zone');
-			$this->load->model('catalog/category');
 			$this->load->model('tool/image');
 			
-			$data['version']				= $this->getVersion();
+			$data['version']				= $this->version();
 			$data['image_status']			= $this->statusImage;
 			$data['instruction_status']		= $this->statusInstruction;
 			
@@ -723,21 +672,17 @@ class ControllerShippingOCAASPRO extends Controller {
 				$data['img_base_path'] = AceShop::getClass()->getFullUrl() . 'components/com_aceshop/opencart/admin/';
 			}
 			
-			if ($this->getVersion() >= 200) {
-				$data['link_store'] 			= $this->getLink('setting', 'store/add');
-				$data['link_geo_zone'] 			= $this->getLink('localisation', 'geo_zone/add');
-				$data['link_currency'] 			= $this->getLink('localisation', 'currency/add');
-				$data['link_customer_group'] 	= $this->getLink('sale', 'customer_group/add');
-				$data['link_category'] 			= $this->getLink('catalog', 'category/add');		
+			if ($this->version() >= 200) {
+				$data['link_store'] 			= $this->link('setting', 'store/add');
+				$data['link_geo_zone'] 			= $this->link('localisation', 'geo_zone/add');
+				$data['link_customer_group'] 	= ($this->version() > 200) ? $this->link('customer', 'customer_group/add') : $this->link('sale', 'customer_group/add');
 			} else {
-				$data['link_store'] 			= $this->getLink('setting', 'store/insert');
-				$data['link_geo_zone'] 			= $this->getLink('localisation', 'geo_zone/insert');
-				$data['link_currency'] 			= $this->getLink('localisation', 'currency/insert');
-				$data['link_customer_group'] 	= $this->getLink('sale', 'customer_group/insert');
-				$data['link_category'] 			= $this->getLink('catalog', 'category/insert');		
+				$data['link_store'] 			= $this->link('setting', 'store/insert');
+				$data['link_geo_zone'] 			= $this->link('localisation', 'geo_zone/insert');
+				$data['link_customer_group'] 	= $this->link('sale', 'customer_group/insert');
 			}
-			
-			$options = array('total_types', 'rate_types', 'multirates', 'cost_settings', 'category_settings', 'final_costs', 'postal_code_types', 'days');
+						
+			$options = array('total_type', 'final_cost');
 			foreach ($options as $option) {
 				$x = 0;
 				$data[$option] = array();
@@ -750,36 +695,71 @@ class ControllerShippingOCAASPRO extends Controller {
 				}
 			}
 			
+			$data['requirement_match'] = array();
+			foreach (array('any', 'all', 'none') as $param) {
+				$data['requirement_match'][] = array(
+					'id'	=> $param,
+					'name'	=> $data['requirement_match_' . $param],
+				);
+			}
+			
+			$data['requirement_cost'] = array();
+			foreach (array('every', 'any', 'all', 'none') as $param) {
+				$data['requirement_cost'][] = array(
+					'id'	=> $param,
+					'name'	=> $data['requirement_cost_' . $param],
+				);
+			}
+			
+			$data['rate_types'] 	= array();
+			$rate_types['cart'] 	= array('quantity', 'total', 'weight', 'volume', 'dim_weight', 'distance');
+			$rate_types['product'] 	= array('quantity', 'total', 'weight', 'volume');
+			foreach ($rate_types as $rate_group => $rate_types) {
+				foreach ($rate_types as $rate_type) {
+					$data['rate_types'][$rate_group][] = array(
+						'id'	=> $rate_group . '_' . $rate_type,
+						'name'	=> $data['text_rate_type_' . $rate_group . '_' . $rate_type],
+					);
+				}
+			}
+			
+			//Get Installed Shipping Methods
+			$data['rate_types']['other'] = array();
+			$this->load->model($this->version() >= 200 ? 'extension/extension' : 'setting/extension');
+			$shipping_methods = $this->{'model_' . ($this->version() >= 200 ? 'extension_extension' : 'setting_extension')}->getInstalled('shipping');
+			foreach ($shipping_methods as $shipping_method) {
+				if ($shipping_method !== $this->extension && $shipping_method !== 'ocapps') {
+					$this->load->language('shipping/' . $shipping_method);
+					$data['rate_types']['other'][] = array(
+						'id'	=> $shipping_method,
+						'name'	=> strip_tags($this->language->get('heading_title')),
+					);
+				}
+			}
+			
 			$data['default_store']				= $this->config->get('config_name');
 			
 			$data['languages'] 					= $this->model_localisation_language->getLanguages();
 			$data['tax_classes'] 				= $this->model_localisation_tax_class->getTaxClasses();
-			$data['currencies'] 				= $this->model_localisation_currency->getCurrencies();
+			$data['currencies']					= $this->model_localisation_currency->getCurrencies();
 			$data['stores'] 					= $this->model_setting_store->getStores();
-			$data['customer_groups'] 			= $this->model_sale_customer_group->getCustomerGroups();
+			$data['customer_groups'] 			= $this->{'model_' . ($this->version() > 200 ? 'customer_customer_group' : 'sale_customer_group')}->getCustomerGroups();
 			$data['geo_zones'] 					= $this->model_localisation_geo_zone->getGeoZones();
-			$data['categories'] 				= $this->model_catalog_category->getCategories(0);
 			
 			foreach ($rate_info as $key => $value) {
-				$data['data'][$key] = $this->getField($value);
-			}			
-			
+				$data['data'][$key] = $this->value($value);
+			}		
+
 			$data['rate_id'] 					= $rate_id;
-				
-			$data['entry_weight'] 				= sprintf($data['entry_weight'], $this->getWeight());
-			$data['entry_shipping_factor'] 		= sprintf($data['entry_shipping_factor'], $this->getLength(), $this->getWeight());
-			$data['entry_volume'] 				= sprintf($data['entry_volume'], $this->getLength());
-			$data['entry_length'] 				= sprintf($data['entry_length'], $this->getLength());
-			$data['entry_width'] 				= sprintf($data['entry_width'], $this->getLength());
-			$data['entry_height'] 				= sprintf($data['entry_height'], $this->getLength());
-			$data['entry_quantity']				= sprintf($data['entry_quantity'], '#');
-			$data['entry_total'] 				= sprintf($data['entry_total'], $this->getCurrency($rate_info['currency']));
 			
-			if ($this->getVersion() >= 200) {
-				$no_image = 'no_image.png';
-			} else {
-				$no_image = 'no_image.jpg';
-			}
+			$data['entry_shipping_factor'] 		= sprintf($data['entry_shipping_factor'], $this->length(), $this->weight());
+			
+			$data['requirement_types']			= $this->requirement_settings['types'];
+			$data['operations']					= $this->requirement_settings['operations'];
+			$data['values']						= $this->requirement_settings['values'];
+			$data['parameters']					= $this->requirement_settings['parameters'];
+			
+			$no_image = ($this->version() >= 200) ? 'no_image.png' : 'no_image.jpg';
 			
 			if ($data['data']['image'] && file_exists(DIR_IMAGE . $data['data']['image'])) {
 				$data['thumb'] 	= $this->model_tool_image->resize($data['data']['image'], 100, 100);
@@ -790,7 +770,7 @@ class ControllerShippingOCAASPRO extends Controller {
 			
 			$data['footer'] = sprintf($data['text_rate_footer'], $data['data']['rate_id'], date($data['date_format_short'], strtotime($data['data']['date_added'])), date($data['date_format_short'], strtotime($data['data']['date_modified'])), $data['data']['administrator']);
 			
-			if ($this->getVersion() >= 200) {
+			if ($this->version() >= 200) {
 				$html = $this->load->view($this->type . '/' . $this->extension . '_rate.tpl', $data);
 			} else {
 				$template = new Template();
@@ -804,7 +784,49 @@ class ControllerShippingOCAASPRO extends Controller {
 		}
 	}
 	
-	private function getWeight() {
+	public function requirement() {
+		$json = array();
+		
+		$this->buildRequirements();
+		
+		$data = array();
+		$data = array_merge($data, $this->load->language($this->type . '/' . $this->extension));
+		
+		$type = isset($this->request->get['type']) ? $this->request->get['type'] : false;
+		if ($type) {
+			$json['success'] = true;
+			
+			if (!empty($this->requirement_settings['operations'][$type])) {
+				$json['operations'] = array();
+				foreach ($this->requirement_settings['operations'][$type] as $value) {
+					$json['operations'][$value['id']] = $value['name'];
+				}
+			}
+			
+			if (!empty($this->requirement_settings['values'][$type])) {
+				$json['values'] = array();
+				foreach ($this->requirement_settings['values'][$type] as $value) {
+					//Add A Space In Front Of Value To Prevent Browsers From Sorting
+					$json['values'][' ' . $value['id']] = $value['name'];
+				}
+			}
+			
+			if (!empty($this->requirement_settings['parameters'][$type])) {
+				$json['parameters'] = array();
+				foreach ($this->requirement_settings['parameters'][$type] as $key => $param) {
+					foreach ($param as $value) {
+						$json['parameters'][$key][$value['id']] = $value['name'];
+					}
+					$json['parameter_tooltip'] = isset($data['tooltip_' . $type . '_' . $key]) ? $data['tooltip_' . $type . '_' . $key] : '';
+				}
+			}
+			
+			$json['value_tooltip'] = isset($data['tooltip_' . $type]) ? $data['tooltip_' . $type] : '';
+		}
+		$this->response->setOutput(json_encode($json));	
+	}			
+	
+	private function weight() {
 		$this->load->model('localisation/weight_class');
 		if ($this->config->get('config_weight_class_id')) {
 			$weight_class = $this->model_localisation_weight_class->getWeightClass($this->config->get('config_weight_class_id'));
@@ -816,7 +838,7 @@ class ControllerShippingOCAASPRO extends Controller {
 		return $weight_units;
 	}
 	
-	private function getLength() {
+	private function length() {
 		$this->load->model('localisation/length_class');
 		if ($this->config->get('config_length_class_id')) {
 			$length_class = $this->model_localisation_length_class->getLengthClass($this->config->get('config_length_class_id')); 
@@ -828,18 +850,23 @@ class ControllerShippingOCAASPRO extends Controller {
 		return $length_units;
 	}
 	
-	private function getCurrency($currency) {
+	private function currency($currency) {
 		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "currency WHERE code = '" . $this->db->escape($currency) . "'");
-		$currency_symbol = !empty($query->row['symbol_left']) ? $query->row['symbol_left'] : $query->row['symbol_right'];
-		return $currency_symbol;
+		if (!empty($query->row['symbol_left'])) {
+			return $query->row['symbol_left'];
+		} elseif (!empty($query->row['symbol_right'])) {
+			return $query->row['symbol_right'];
+		} else {
+			return '';
+		}
 	}
 	
 	private function validateRate($value) {		
 		$rate_errors = array();
 		
-		$postcode_formulas 	= array();
-		$postcode_formulas[] = '/^([0-9a-zA-Z]+)$/';
-		$postcode_formulas[] = '/^([0-9a-zA-Z]+):([0-9a-zA-Z]+)$/';
+		$postcode_formats 	= array();
+		$postcode_formats[] = '/^([0-9a-zA-Z]+)$/';
+		$postcode_formats[] = '/^([0-9a-zA-Z]+):([0-9a-zA-Z]+)$/';
 		
 		$uk_formats	= array();		
 		$uk_formats[] = '/^([a-zA-Z]{2}[0-9]{1}[a-zA-Z]{1}[0-9]{1}[a-zA-Z]{2})$/';
@@ -849,15 +876,12 @@ class ControllerShippingOCAASPRO extends Controller {
 		$uk_formats[] = '/^([a-zA-Z]{2}[0-9]{2}[a-zA-Z]{2})$/';
 		$uk_formats[] = '/^([a-zA-Z]{2}[0-9]{3}[a-zA-Z]{2})$/';
 		
-		$rate_formulas 	= array();
-		$rate_formulas[] = '/^([0-9.]+|~):([0-9.%]+)$/';
-		$rate_formulas[] = '/^([0-9.]+|~):([0-9.%]+)\+([0-9.%]+)$/';
-		$rate_formulas[] = '/^([0-9.]+|~):([0-9.%]+)\/([0-9.]+)$/';
-		$rate_formulas[] = '/^([0-9.]+|~):([0-9.%]+)\/([0-9.]+)\+([0-9.%]+)$/';
+		$rate_formats 	= array();
+		$rate_formats[] = '/^([0-9.]+|~):([0-9.%]+)$/';
+		$rate_formats[] = '/^([0-9.]+|~):([0-9.%]+)\+([0-9.%]+)$/';
+		$rate_formats[] = '/^([0-9.]+|~):([0-9.%]+)\/([0-9.]+)$/';
+		$rate_formats[] = '/^([0-9.]+|~):([0-9.%]+)\/([0-9.]+)\+([0-9.%]+)$/';
 				
-		if (!isset($value['days'])) {
-			$rate_errors['days'] = sprintf($this->language->get('error_rate_days'));
-		}
 		if (!isset($value['stores'])) {
 			$rate_errors['stores'] = sprintf($this->language->get('error_rate_stores'));
 		}
@@ -867,92 +891,102 @@ class ControllerShippingOCAASPRO extends Controller {
 		if (!isset($value['geo_zones'])) {
 			$rate_errors['geo_zones'] = sprintf($this->language->get('error_rate_geo_zones'));
 		}
-		if (!isset($value['currencies'])) {
-			$rate_errors['currencies'] = sprintf($this->language->get('error_rate_currencies'));
-		}
-		if (!isset($value['categories'])) {
-			$rate_errors['categories'] = sprintf($this->language->get('error_rate_categories'));
-		}
-		if ($value['rate_type'] == 4 && !$value['shipping_factor']) {
+		if (($value['rate_type'] == 'cart_dim_weight' || $value['rate_type'] == 'product_dim_weight') && !$value['shipping_factor']) {
 			$rate_errors['shipping_factor'] = sprintf($this->language->get('error_rate_shipping_factor'));
 		}
-		if ($value['rate_type'] == 5 && !$value['origin']) {
+		if ($value['rate_type'] == 'cart_distance' && !$value['origin']) {
 			$rate_errors['origin'] = sprintf($this->language->get('error_rate_origin'));
 		}
-		if ($value['postcode_ranges']) {
-			$postcode_ranges = explode(',', $value['postcode_ranges']);
-			foreach ($postcode_ranges as $postcode_range) {
-				$postcode_range_status = false;
-				$postcode_range = trim($postcode_range);
-				foreach ($postcode_formulas as $formula) {
-					if (preg_match($formula, $postcode_range)) {
-						$postcode_range_status = true;
-						if ($value['postcode_type'] == 0) {
-							$postcode_status = false;
-							$postcodes = explode(':', $postcode_range);
-							$postcodes[0] = trim($postcodes[0]);
-							foreach ($uk_formats as $format) {
-								if (preg_match($format, $postcodes[0])) {
-									$postcode_status = true;
-								}
-							}
-							if (!$postcode_status) {
-								$rate_errors['postcode'] = sprintf($this->language->get('error_rate_postcode_formatting'), $postcodes[0]);
-								break;
-							} else {
-								$postcode_status = false;
-								$postcodes[1] = trim($postcodes[1]);
-								foreach ($uk_formats as $format) {
-									if (preg_match($format, $postcodes[1])) {
-										$postcode_status = true;
+		if (!empty($value['requirements'])) {
+			foreach ($value['requirements'] as $key => $requirement) {
+				if ($requirement['type'] == 'customer_postcode') {
+					if ($requirement['value']) {
+						$postcode_ranges = explode(',', $requirement['value']);
+						foreach ($postcode_ranges as $postcode_range) {
+							$postcode_format_match = false;
+							$postcode_range = trim($postcode_range);
+							foreach ($postcode_formats as $postcode_format) {
+								if (preg_match($postcode_format, $postcode_range)) {
+									$postcode_format_match = true;
+									if ($requirement['parameter']['type'] == 'uk') {
+										$postcode_uk_format_match = false;
+										$postcodes = explode(':', $postcode_range);
+										$postcodes[0] = trim($postcodes[0]);
+										foreach ($uk_formats as $uk_format) {
+											if (preg_match($uk_format, $postcodes[0])) {
+												$postcode_uk_format_match = true;
+												break;
+											}
+										}
+										if (!$postcode_uk_format_match) {
+											$rate_errors['requirement_' . $key] = sprintf($this->language->get('error_rate_postcode_formatting'), $postcodes[0]);
+										}
+										if (!empty($postcodes[1])) {
+											$postcode_uk_format_match = false;
+											$postcodes[1] = trim($postcodes[1]);
+											foreach ($uk_formats as $uk_format) {
+												if (preg_match($uk_format, $postcodes[1])) {
+													$postcode_uk_format_match = true;
+													break;
+												}
+											}
+											if (!$postcode_uk_format_match) {
+												$rate_errors['requirement_' . $key] = sprintf($this->language->get('error_rate_postcode_formatting'), $postcodes[1]);
+											}
+										}
 									}
-								}
-								if (!$postcode_status) {
-									$rate_errors['postcode'] = sprintf($this->language->get('error_rate_postcode_formatting'), $postcodes[1]);
 									break;
 								}
 							}
+							if (!$postcode_format_match) {
+								$rate_errors['requirement_' . $key] = sprintf($this->language->get('error_rate_postcode_range_formatting'), $postcode_range);
+							}
 						}
+					} else {
+						$rate_errors['requirement_' . $key] = $this->language->get('error_rate_requirement');
 					}
-				}
-				if (!$postcode_range_status) {
-					$rate_errors['postcode_ranges'] = sprintf($this->language->get('error_rate_postcode_range_formatting'), $postcode_range);
-					break;
+				} else {
+					if (empty($requirement['value'])) {
+						$rate_errors['requirement_' . $key] = $this->language->get('error_rate_requirement');
+					}
 				}
 			}
 		}
-		if (!$value['rates']) {
-			$rate_errors['rates'] = sprintf($this->language->get('error_rate_rates'));
-		} else {
-			$rates = explode(',', $value['rates']);
-			foreach ($rates as $rate) {
-				$rate_status = false;
-				$rate = trim($rate);
-				foreach ($rate_formulas as $formula) {
-					if (preg_match($formula, $rate)) {
-						$rate_status = true;
+		if (strpos($value['rate_type'], 'cart_') === 0 || strpos($value['rate_type'], 'product_') === 0) {
+			if (!$value['rates']) {
+				$rate_errors['rates'] = sprintf($this->language->get('error_rate_rates'));
+			} else {
+				$rates = explode(',', $value['rates']);
+				foreach ($rates as $rate) {
+					$rate_status = false;
+					$rate = trim($rate);
+					foreach ($rate_formats as $rate_format) {
+						if (preg_match($rate_format, $rate)) {
+							$rate_status = true;
+							break;
+						}
 					}
-				}
-				if (!$rate_status) {
-					$rate_errors['rates'] = sprintf($this->language->get('error_rate_rates_formatting'), $rate);
-					break;
+					if (!$rate_status) {
+						$rate_errors['rates'] = sprintf($this->language->get('error_rate_rates_formatting'), $rate);
+						break;
+					}
 				}
 			}
 		}
 		return $rate_errors;	
 	}
 	
-	private function getDefaultSettings() {
+	public function settings() {
 		$this->load->model('localisation/language');
 		$this->load->model('setting/store');
-		$this->load->model('sale/customer_group');
+		$this->load->model(($this->version() > 200 ? 'customer/customer_group' : 'sale/customer_group'));
 		$this->load->model('localisation/geo_zone');
 		$this->load->model('catalog/category');
 		
 		$this->load->language($this->type . '/' . $this->extension);
 		
 		$this->load->model('oca/' . $this->extension);
-		$data = $this->model_oca_ocaaspro->getFields();
+		$data = $this->{'model_oca_' . $this->extension}->settings();
 		
 		$data['description'] = $this->language->get('text_name');
 		
@@ -960,8 +994,8 @@ class ControllerShippingOCAASPRO extends Controller {
 			$data['stores'][] = (int)$store['store_id'];
 		}
 		
-		foreach ($this->model_sale_customer_group->getCustomerGroups() as $customer_group) {
-			$data['customer_groups'][] = (int)$customer_group['customer_group_id'];
+		foreach ($this->{'model_' . ($this->version() > 200 ? 'customer_customer_group' : 'sale_customer_group')}->getCustomerGroups() as $customer_group) {
+				$data['customer_groups'][] = (int)$customer_group['customer_group_id'];
 		}
 		
 		foreach ($this->model_localisation_geo_zone->getGeoZones() as $geo_zone) {
@@ -979,100 +1013,37 @@ class ControllerShippingOCAASPRO extends Controller {
 		return $data;
 	}
 	
-	private function getCSVInfo() {
-		$instructions 	= array();
-		$instructions[] = 'DO NOT ADD OR REMOVE ANY COLUMNS. ADDING OR REMOVING COLUMNS MAY PREVENT RATES FROM IMPORTING CORRECTLY!';
-		$instructions[] = 'SEPARATE RATE NAMES BY LANGUAGE CODE USING "|".';
-		$instructions[] = 'VALUES FOR FIELDS MARKED WITH [start|end] OR [min|max|add] MUST BE SEPARATED USING "|".';
+	private function csv() {
+		$instructions 	= 'DO NOT ADD OR REMOVE ANY COLUMNS. ADDING OR REMOVING COLUMNS MAY PREVENT RATES FROM IMPORTING CORRECTLY!';
 		
-		$row_offset 	= 3;
+		$row_offset 	= 1;
 		$col_offset 	= 0;
 		
 		$fields 		= array();
 		$this->load->model('oca/' . $this->extension);
-		$data = $this->model_oca_ocaaspro->getFields();
+		$data = $this->{'model_oca_' . $this->extension}->settings();
 		foreach ($data as $key => $value) {
 			$fields[] = $key;
 		}
 		
-		$suffix = $this->getCSVSuffix();
-		
-		$modify_headers = array(
-			'name'				=> $suffix['language'],
-			'instruction'		=> $suffix['language'],
-			'days'				=> $suffix['array'],
-			'time'				=> $suffix['startend'],
-			'date'				=> $suffix['startend'],
-			'stores'			=> $suffix['array'],
-			'customer_groups' 	=> $suffix['array'],
-			'geo_zones'			=> $suffix['array'],
-			'currencies'		=> $suffix['array'],
-			'cart_quantity'		=> $suffix['minmaxadd'],
-			'cart_total'		=> $suffix['minmaxadd'],
-			'cart_weight'		=> $suffix['minmaxadd'],
-			'cart_volume'		=> $suffix['minmaxadd'],
-			'cart_distance'		=> $suffix['minmaxadd'],
-			'cart_length'		=> $suffix['minmaxadd'],
-			'cart_width'		=> $suffix['minmaxadd'],
-			'cart_height'		=> $suffix['minmaxadd'],
-			'product_length'	=> $suffix['minmaxadd'],
-			'product_width'		=> $suffix['minmaxadd'],
-			'product_height'	=> $suffix['minmaxadd'],
-			'categories'		=> $suffix['array'],
-			'cost'				=> $suffix['minmaxadd']
-		);
-		
-		$headers = array();	
-		foreach ($fields as $field) {
-			$headers[] = isset($modify_headers[$field]) ? $field . ' ' . $modify_headers[$field] : $field;
-		}
-		
 		return array(
 			'instructions'	=> $instructions,
-			'headers'		=> $headers,
 			'fields'		=> $fields,
 			'row_offset'	=> $row_offset,
 			'col_offset'	=> $col_offset,
 		);
 	}
 	
-	private function getCSVSuffix() {
-		$this->load->model('localisation/language');
-		$languages = $this->model_localisation_language->getLanguages();
-		
-		$x = 1;
-		$text_language = '[';
-		foreach ($languages as $language) {
-			$text_language .= ($x > 1) ? '|' . $language['code'] : $language['code'];
-			$x++;
-		}
-		$text_language .= ']';
-		
-		$text_array	= '[array]';
-		$text_startend	= '[start|end]';
-		$text_minmaxadd	= '[min|max|add]';
-		
-		return array(
-			'language'	=> $text_language,
-			'array'		=> $text_array,
-			'startend'	=> $text_startend,
-			'minmaxadd'	=> $text_minmaxadd
-		);
-	}
-	
-	public function importRates($file) {
+	public function import($file) {
 		if ($this->validate() && $file) {
 			$this->load->model('oca/' . $this->extension);
-			
-			$this->load->language($this->type . '/' . $this->extension);
 			
 			$changes = array(
 				'added'		=> 0,
 				'updated'	=> 0
 			);
 			
-			$csv_info 	= $this->getCSVInfo();
-			$csv_suffix	= $this->getCSVSuffix();
+			$csv_info 	= $this->csv();
 			
 			$row = 0;
 			if (($handle = fopen($file, "r")) !== false) {			
@@ -1080,50 +1051,20 @@ class ControllerShippingOCAASPRO extends Controller {
 					if ($row > $csv_info['row_offset']) {
 						$col = $csv_info['col_offset'];
 						foreach ($fields as $field) {
-							if (strpos($field, 'name') !== false || strpos($field, 'instruction') !== false) {
-								$values = explode('|', $data[$col++]);
-								$key	= explode('[', $field);
-								$key	= trim($key[0]);
-								$x = 0;
-								foreach ($language_codes as $language_code) {
-									$rate_info[$key][$language_code] = isset($values[$x]) ? $values[$x] : '';
-									$x++;
-								}
-							} elseif (strpos($field, $csv_suffix['array']) !== false) {
-								$value = $data[$col++];
-								$values = (strpos($value, '|') !== false) ? explode('|', $value) : array($value);
-								$key	= explode('[', $field);
-								$key	= trim($key[0]);
-								$rate_info[$key] = $values;
-							} elseif (strpos($field, $csv_suffix['startend']) !== false) {
-								$values = explode('|', $data[$col++]);
-								$key	= explode('[', $field);
-								$key	= trim($key[0]);
-								$rate_info[$key]['start'] 	= isset($values[0]) ? $values[0] : '';
-								$rate_info[$key]['end'] 	= isset($values[1]) ? $values[1] : '';
-							} elseif (strpos($field, $csv_suffix['minmaxadd']) !== false) {
-								$values = explode('|', $data[$col++]);
-								$key	= explode('[', $field);
-								$key	= trim($key[0]);
-								$rate_info[$key]['min'] 	= isset($values[0]) ? $values[0] : '';
-								$rate_info[$key]['max'] 	= isset($values[1]) ? $values[1] : '';
-								$rate_info[$key]['add'] 	= isset($values[2]) ? $values[2] : '';
-							} else {
-								$value 	= $data[$col++];
-								$key	= trim($field);
-								$rate_info[$key] = (strpos($value, '|') !== false) ? explode('|', $value) : $value;
-							}
+							$value 				= $this->value($data[$col++]);
+							$key				= trim($field);
+							$rate_info[$key] 	= $value;
 						}
 						
-						foreach ($this->getDefaultSettings() as $key => $value) {
+						foreach ($this->settings() as $key => $value) {
 							$rate_info[$key] = isset($rate_info[$key]) ? $rate_info[$key] : $value;
 						}
 						
-						if ($rate_info['rate_id'] && $this->model_oca_ocaaspro->getRate($rate_info['rate_id'])) {
-							$this->model_oca_ocaaspro->editRate($rate_info['rate_id'], $rate_info);
+						if ($rate_info['rate_id'] && $this->{'model_oca_' . $this->extension}->getRate($rate_info['rate_id'])) {
+							$this->{'model_oca_' . $this->extension}->editRate($rate_info['rate_id'], $rate_info);
 							$changes['updated']++;
 						} else {
-							$this->model_oca_ocaaspro->addRate($rate_info);
+							$this->{'model_oca_' . $this->extension}->addRate($rate_info);
 							$changes['added']++;
 						}
 						
@@ -1132,31 +1073,20 @@ class ControllerShippingOCAASPRO extends Controller {
 						$fields = array();
 						$fields = array_merge($data);
 						
-						foreach ($fields as $field) {
-							if (strpos($field, 'name') !== false || strpos($field, 'instruction') !== false) {
-								preg_match('/\[([A-Za-z0-9\|]+)\]/', $field, $language_codes);
-								$language_codes = str_replace(array('[',']'), '', $language_codes);
-								if (isset($language_codes[0])) {
-									$language_codes = explode('|', $language_codes[0]);
-									break;
-								}
-							}
-						}
-						
 						$row++;	
 					} else {
 						$row++;
 					}
 				}
 			}
-			$this->session->data['success'] = sprintf($this->language->get('success_import'), $changes['added'], $changes['updated']);
+			$this->session->data['success'] = sprintf($this->language->get('success_rate_import'), $changes['added'], $changes['updated']);
 		}
 	}
 	
-	public function exportRates() {
+	public function export() {
 		if ($this->validate()) {
 			$this->load->model('oca/' . $this->extension);
-			$rates = $this->model_oca_ocaaspro->getRates();
+			$rates = $this->{'model_oca_' . $this->extension}->getRates();
 			
 			if ($rates) {
 				$this->response->addheader('Pragma: public');
@@ -1166,28 +1096,23 @@ class ControllerShippingOCAASPRO extends Controller {
 				$this->response->addheader('Content-Disposition: attachment; filename=' . date('Y-m-d_H-i-s', time()).'_' . $this->extension . '.csv');
 				$this->response->addheader('Content-Transfer-Encoding: binary');
 				
-				$csv_info = $this->getCSVInfo();
+				$csv_info = $this->csv();
 				
-				$output = '';
-				
-				foreach ($csv_info['instructions'] as $instruction) {
-					$output .= '"' . str_replace('"', '""', $instruction) . '"';
-					$output .= "\n";
-				}
+				$output = str_replace('"', '""', $csv_info['instructions']);
+				$output .= "\n";
 				
 				$x = 1;
-				foreach ($csv_info['headers'] as $header) {
-					$output	.= ($x > 1) ? ',"' . str_replace('"', '""', $header) . '"' : '"' . str_replace('"', '""', $header) . '"';
+				foreach ($csv_info['fields'] as $field) {
+					$output	.= ($x > 1) ? ',"' . str_replace('"', '""', $field) . '"' : '"' . str_replace('"', '""', $field) . '"';
 					$x++;
 				}
 				$output .= "\n";
 			
 				foreach ($rates as $rate) {
-					$rate_info = $this->model_oca_ocaaspro->getRate($rate['rate_id']);
+					$rate_info = $this->{'model_oca_' . $this->extension}->getRate($rate['rate_id']);
 					
 					foreach ($rate_info as $key => $value) {
-						$field_value = str_replace(array("\r", "\n"), "", $this->getField($value));
-						$data[$key] = (is_array($field_value)) ? implode('|', $field_value) : $field_value;
+						$data[$key] = $value;
 					}
 					
 					if ($rate_info) {
@@ -1233,7 +1158,37 @@ class ControllerShippingOCAASPRO extends Controller {
 		if ($this->validate()) {
 			$file = DIR_LOGS . $this->extension . '.txt';
 			file_put_contents($file, '');
-			$json['success'] = $this->language->get('success_clear');
+			$json['success'] = $this->language->get('success_debug_clear');
+		} else {
+			$json['error'] = $this->language->get('error_permission');
+		}
+		$this->response->setOutput(json_encode($json));
+	}
+	
+	public function reloadDebug() {
+		$json = array();
+		
+		$this->load->language($this->type . '/' . $this->extension);
+		
+		if ($this->validate()) {
+			$file = DIR_LOGS . $this->extension . '.txt';
+			if (file_exists($file)) {
+				$file_size = filesize($file);
+				if ($file_size >= 5242880) {
+					$suffix = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+					$i = 0;
+					while (($file_size / 1024) > 1) {
+						$file_size = $file_size / 1024;
+						$i++;
+					}
+					$json['error'] = sprintf($this->language->get('error_debug'), basename($file), round(substr($file_size, 0, strpos($file_size, '.') + 4), 2) . $suffix[$i]);
+				} else {
+					$json['debug_log'] = file_get_contents($file, FILE_USE_INCLUDE_PATH, null);
+				}
+				$json['success'] = $this->language->get('success_debug_reload');
+			} else {
+				$json['debug_log'] = '';
+			}
 		} else {
 			$json['error'] = $this->language->get('error_permission');
 		}
@@ -1246,14 +1201,16 @@ class ControllerShippingOCAASPRO extends Controller {
 		$this->load->language($this->type . '/' . $this->extension);
 		
 		if ($this->validate() && isset($this->request->post)) {
-			if ($this->request->post['email'] && $this->request->post['order_id'] && $this->request->post['description']) {
+			if ($this->request->post['email'] && $this->request->post['order_id'] && $this->request->post['enquiry']) {
 				$text  = "Extension: " . $this->language->get('text_name') . "\n";
+				$text .= "Version: " . $this->version . "\n";
+				$text .= (defined('VERSION')) ? "OpenCart Version: " . VERSION . "\n" : "OpenCart Version: N/A \n";
 				$text .= "Website: " . HTTP_CATALOG . "\n";
 				$text .= "Email: " . $this->request->post['email'] . "\n";
 				$text .= "Order ID: " . $this->request->post['order_id'] . "\n";
 				$text .= "\n";
 				$text .= "Support Question: \n";
-				$text .= $this->request->post['description'];
+				$text .= $this->request->post['enquiry'];
 								
 				$mail = new Mail(); 
 				$mail->protocol = $this->config->get('config_mail_protocol');
@@ -1270,9 +1227,9 @@ class ControllerShippingOCAASPRO extends Controller {
 				$mail->setTo($this->email);
 				$mail->send();
 			
-				$json['success'] = $this->language->get('modal_support_success');
+				$json['success'] = $this->language->get('success_support');
 			} else {
-				$json['error'] = $this->language->get('modal_support_error');
+				$json['error'] = $this->language->get('error_support');
 			}
 		} else {
 			$json['error'] = $this->language->get('error_permission');
@@ -1305,10 +1262,15 @@ class ControllerShippingOCAASPRO extends Controller {
 		}	
 	}
 	
+	private $requirement_settings;
+	
 	private $img_logo	= 'oca_pro_logo.png';
 	private $icon_logo	= 'oca_icon_pro_logo.png';
+	private $icon_name	= 'oca_icon_pro_name.png';
 	
-	private $statusImage		= true;
-	private $statusInstruction	= true;
+	private $statusImage		= false;
+	private $statusInstruction	= false;
+	
+	private $ocapps_status		= false;
 }
 ?>

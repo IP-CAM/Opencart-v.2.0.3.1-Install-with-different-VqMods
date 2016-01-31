@@ -65,6 +65,13 @@
     .checkbox-explanation{font-style: italic; color: #555; margin-left: 25px; font-size: 90%; margin-bottom: 10px;}
     .clear-fix{clear:both;}
     .settings-box-wrapper{min-width: 250px;}
+    label.checkbox-inline{
+      min-width: 160px;
+    }
+    label.checkbox-inline + label.checkbox-inline{
+      margin-left: 0px;
+      margin-bottom: 5px;
+    }
     /*view-hook-stylesheet*/
   </style>
   <div class="status-text" style="display:none">
