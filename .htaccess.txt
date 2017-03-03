@@ -1,4 +1,4 @@
-#--nukreipimas su www
+##--nukreipimas su www
 #RewriteEngine on
 #RewriteCond %{HTTP_HOST} ^domain\.com
 #RewriteRule ^(.*)$ http://www.domain.com/$1 [R=permanent,L] 
@@ -10,7 +10,7 @@
 
 Options +FollowSymlinks
 
-# Prevent Directoy listing 
+# Prevent Directoy listing
 Options -Indexes
 
 # Prevent Direct Access to files
